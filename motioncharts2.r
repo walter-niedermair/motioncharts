@@ -2,12 +2,17 @@ if (!require("openxlsx"))   install.packages("openxlsx")   ; library (openxlsx) 
 if (!require("data.table")) install.packages("data.table") ; library (data.table)
 if (!require("stringr"))    install.packages("stringr")    ; library (stringr)
 
-directorymain <- 'G:/AMB/ARBDATEN/OnlineGrafiken/MotionCharts2'
-directoryddf  <- paste(directorymain,'ddf--amb',sep = "/")
-directorydati <- paste(directorymain,'d',sep = "/")
-
-
 Lingua <- "Deutsch" # Italiano
+ if (Lingua == "Deutsch") lingua <- "de" else lingua <- "it"
+
+ directorymain <- getwd()
+ setwd(directorymain)
+
+ # Lösung mit sprintf anstelle von paste
+ directoryddf  <- sprintf('%s/ddf--%s-amb',directorymain,lingua)
+
+ directorydati <- paste(directorymain,'d',sep = "/")
+
 
 # leggo i nomi dei comuni, circoscrizioni, piccole aree funzionali
 sheetsXLS <- c('Comuni', 'Com_AggrDimora', 'Com_AggrDimora_DC', 'Com_AggrASDimora', 'Com_AggrPAFDimora')
