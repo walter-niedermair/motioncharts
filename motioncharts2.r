@@ -4,8 +4,8 @@ if (!require("stringr"))    install.packages("stringr")    ; library (stringr)
 
 #-- selezionare la Lingua di esecuzione dello script
 
-Lingua <- "Deutsch" # Italiano
-if (Lingua == "Deutsch") lingua <- "de" else lingua <- "it"
+Lingua <- "Italiano" # Italiano
+if (Lingua == "Italiano") lingua <- "it" else lingua <- "de"
 
 
 #-- definisco le directory 
@@ -16,7 +16,7 @@ directoryddf  <- sprintf('%s/ddf--%s-amb',directorymain,lingua)
 
 #-- creo la directory ddf se non esiste già
 
-if (!dir.exists(directoryddf)) dir.create(sprintf('%s/ddf--%s-amb',directorymain,lingua)) 
+if (!dir.exists(directoryddf)) dir.create(sprintf('%s/ddf--%s-amb',directorymain,lingua))
 
 #-- leggo i nomi dei comuni, circoscrizioni, piccole aree funzionali, etc
 
@@ -156,13 +156,26 @@ write.csv(ddf,file = paste(directoryddf,'ddf--datapoints--indicators--by--geo--t
 
 concepts <- read.xlsx(paste(directorydati,"concepts.xlsx", sep="/"))
 setDT(concepts)
-output <- write.csv(concepts,
+
+
+concepts_DE<-subset(concepts,select=c("concept","concept_type","domain","description_DE","name_DE","drill_up"))
+setnames(concepts_DE,c("description_DE","name_DE"),c("description","name"))
+View(concepts_DE)
+
+output_DE<- write.csv(concepts_DE,
                     file= paste(directoryddf,"ddf--concepts.csv",sep="/"),
                     row.names = FALSE,
                     fileEncoding = "UTF-8",
-                    quote=match(c("description","name"),colnames(concepts)),
-                    na=""
-                    )
+                    quote=match(c("description","name"),colnames(concepts_DE)),
+                    na="")
 
-# INSERIRE LINGUA ITALIANA NEL FILE CONCEPTS, POI SUBSET E SELECT
-# FARE COMMIT PER CONTROLLO INTERNO 
+concepts_IT<-subset(concepts,select=c("concept","concept_type","domain","description_IT","name_IT","drill_up"))
+setnames(concepts_IT,c("description_IT","name_IT"),c("description","name"))
+View(concepts_IT)
+
+output_IT<-write.csv(concepts_IT,
+                                 file= paste(directoryddf,"ddf--concepts.csv",sep="/"),
+                                 row.names = FALSE,
+                                 fileEncoding = "UTF-8",
+                                 quote=match(c("description","name"),colnames(concepts_IT)),
+                                 na="")
