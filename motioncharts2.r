@@ -160,7 +160,7 @@ setDT(concepts)
 
 concepts_DE<-subset(concepts,select=c("concept","concept_type","domain","description_DE","name_DE","drill_up"))
 setnames(concepts_DE,c("description_DE","name_DE"),c("description","name"))
-View(concepts_DE)
+
 
 output_DE<- write.csv(concepts_DE,
                     file= paste(directoryddf,"ddf--concepts.csv",sep="/"),
@@ -168,10 +168,11 @@ output_DE<- write.csv(concepts_DE,
                     fileEncoding = "UTF-8",
                     quote=match(c("description","name"),colnames(concepts_DE)),
                     na="")
+View(output_DE)
 
 concepts_IT<-subset(concepts,select=c("concept","concept_type","domain","description_IT","name_IT","drill_up"))
 setnames(concepts_IT,c("description_IT","name_IT"),c("description","name"))
-View(concepts_IT)
+
 
 output_IT<-write.csv(concepts_IT,
                                  file= paste(directoryddf,"ddf--concepts.csv",sep="/"),
@@ -179,3 +180,4 @@ output_IT<-write.csv(concepts_IT,
                                  fileEncoding = "UTF-8",
                                  quote=match(c("description","name"),colnames(concepts_IT)),
                                  na="")
+View(output_IT)
