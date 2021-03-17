@@ -5,14 +5,12 @@ if (!require("stringr"))    install.packages("stringr")    ; library (stringr)
 #-- selezionare la Lingua di esecuzione dello script
 
 Lingua <- "Deutsch" # Italiano
-if (Lingua == "Deutsch") lingua <- "de" else lingua <- "it"
-
 
 #-- definisco le directory 
 
 directorymain <- getwd()
 directorydati <- paste(directorymain,"d", sep="/")
-directoryddf  <- sprintf('%s/ddf--%s-amb',directorymain,lingua)
+directoryddf  <- sprintf('%s/ddf--%s-amb',directorymain,tolower(substr(Lingua,1,2)))
 
 #-- creo la directory ddf se non esiste già
 
@@ -49,15 +47,12 @@ GEM$gem <- as.integer(substr(GEM$Chiave,4,6))
 GEM <- GEM[order(GEM$short),]
 
 
-if(Lingua=="Deutsch"){GEM$com_aggr_as <- str_replace_all(GEM$com_aggr_as,c("bruneck" = "bk",
-                                                                           "bozen"   = "bz",
-                                                                           "meran"   = "mr",
-                                                                           "brixen"  = "bx")
-)
-} else {GEM$com_aggr_as <- str_replace_all(GEM$com_aggr_as,c("brunico" = "bk",
-                                                     "bolzano"   = "bz",
-                                                     "merano"   = "mr",
-                                                     "bressanone"  = "bx"))
+if(Lingua=="Deutsch") {
+  GEM$com_aggr_as <- str_replace_all(GEM$com_aggr_as,
+                                     c("bruneck"="bk","bozen"="bz","meran"="mr","brixen"="bx"))
+} else {
+  GEM$com_aggr_as <- str_replace_all(GEM$com_aggr_as,
+                                     c("brunico"= "bk","bolzano"="bz","merano"="mr","bressanone"="bx"))
 }
 
 #-- preparo per l'export del dominio geo (gemeinde)
@@ -156,13 +151,18 @@ write.csv(ddf,file = paste(directoryddf,'ddf--datapoints--indicators--by--geo--t
 
 concepts <- read.xlsx(paste(directorydati,"concepts.xlsx", sep="/"))
 setDT(concepts)
-output <- write.csv(concepts,
-                    file= paste(directoryddf,"ddf--concepts.csv",sep="/"),
-                    row.names = FALSE,
-                    fileEncoding = "UTF-8",
-                    quote=match(c("description","name"),colnames(concepts)),
-                    na=""
-                    )
-### CREARE LA VERSIONE ITALIANA DEL FILE CONCEPTS.XLSX INSERIRE COLONNE E DOPO FARE
-### SUBSET
+
+if(Lingua=="Deutsch") col_to_remove <- "_IT$" else col_to_remove <- "_DE$"
+drop.cols <- grep(col_to_remove,colnames(concepts))
+concepts[, (drop.cols) := NULL]
+
+colnames(concepts) <- sub(paste0("_",toupper(substr(Lingua,1,2))), "", colnames(concepts))
+
+write.csv(concepts,
+          file= paste(directoryddf,"ddf--concepts.csv",sep="/"),
+          row.names = FALSE,
+          fileEncoding = "UTF-8",
+          quote=match(c("description","name"),colnames(concepts)),
+          na=""
+          )
 
