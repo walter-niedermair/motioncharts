@@ -1,4 +1,4 @@
-if (!require("openxlsx"))   install.packages("openxlsx")   ; library (openxlsx) # per leggere xls
+if (!require("openxlsx"))   install.packages("openxlsx")   ; library (openxlsx)
 if (!require("data.table")) install.packages("data.table") ; library (data.table)
 if (!require("stringr"))    install.packages("stringr")    ; library (stringr)
 
