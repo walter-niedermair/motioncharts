@@ -4,15 +4,13 @@ if (!require("stringr"))    install.packages("stringr")    ; library (stringr)
 
 #-- selezionare la Lingua di esecuzione dello script
 
-Lingua <- "Italiano" # Italiano
-if (Lingua == "Italiano") lingua <- "it" else lingua <- "de"
-
+Lingua <- "Deutsch" # Italiano
 
 #-- definisco le directory 
 
 directorymain <- getwd()
 directorydati <- paste(directorymain,"d", sep="/")
-directoryddf  <- sprintf('%s/ddf--%s-amb',directorymain,lingua)
+directoryddf  <- sprintf('%s/ddf--%s-amb',directorymain,tolower(substr(Lingua,1,2)))
 
 #-- creo la directory ddf se non esiste già
 
