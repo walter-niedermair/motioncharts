@@ -39,21 +39,12 @@ GEM <- merge(GEM_Comuni,GEM_Com_AggrASDimora,by="Com_AggrAS")
 GEM$Com_AggrAS <- NULL
 setnames(GEM,"Descrizione","Com_AggrAS")
 
-GEM$com_aggr_as <- tolower(gsub(" ", "", str_replace_all(GEM$Com_AggrAS, "[^[:alnum:]]", " "), fixed = TRUE))
+GEM$com_aggr_as <- paste0("as_",tolower(gsub(" ", "", str_replace_all(GEM$Com_AggrAS, "[^[:alnum:]]", " "), fixed = TRUE)))
 GEM$com_aggr_as <- str_replace_all(GEM$com_aggr_as,c("ü" = "ue", "ä" = "ae", "ö" = "oe", "ë" = "e"))
 
 #-- tolta la chiave "021", cambio formato da string a numeric
 GEM$gem <- as.integer(substr(GEM$Chiave,4,6)) 
 GEM <- GEM[order(GEM$short),]
-
-
-if(Lingua=="Deutsch") {
-  GEM$com_aggr_as <- str_replace_all(GEM$com_aggr_as,
-                                     c("bruneck"="bk","bozen"="bz","meran"="mr","brixen"="bx"))
-} else {
-  GEM$com_aggr_as <- str_replace_all(GEM$com_aggr_as,
-                                     c("brunico"= "bk","bolzano"="bz","merano"="mr","bressanone"="bx"))
-}
 
 #-- preparo per l'export del dominio geo (gemeinde)
 
