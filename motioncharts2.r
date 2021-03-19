@@ -4,7 +4,7 @@ if (!require("stringr"))    install.packages("stringr")    ; library (stringr)
 
 #-- selezionare la Lingua di esecuzione dello script
 
-Lingua <- "Deutsch" # Italiano
+Lingua <- "Italiano" # Italiano ## da cambiare manualmente solo 1 volta
 
 #-- definisco le directory 
 
@@ -47,16 +47,19 @@ GEM$gem <- as.integer(substr(GEM$Chiave,4,6))
 GEM <- GEM[order(GEM$short),]
 
 
-if(Lingua=="Deutsch"){GEM$com_aggr_as <- str_replace_all(GEM$com_aggr_as,c("bruneck" = "bk",
-                                                                           "bozen"   = "bz",
-                                                                           "meran"   = "mr",
-                                                                           "brixen"  = "bx")
-)
-} else {GEM$com_aggr_as <- str_replace_all(GEM$com_aggr_as,c("brunico" = "bk",
-                                                     "bolzano"   = "bz",
-                                                     "merano"   = "mr",
-                                                     "bressanone"  = "bx"))
-}
+
+GEM$com_aggr_as<-str_replace_all(GEM$com_aggr_as,c("bruneck|brunico","bozen|bolzano","meran|merano","brixen|bressanone"),c("bk","bz","mr","bx"))
+
+
+#if(Lingua=="Deutsch"){GEM$com_aggr_as <- str_replace_all(GEM$com_aggr_as,c("bruneck" = "bk",
+#                                                                           "bozen"   = "bz",
+#                                                                           "meran"   = "mr",
+#                                                                           "brixen"  = "bx"))
+#} else {GEM$com_aggr_as <- str_replace_all(GEM$com_aggr_as,c("brunico" = "bk",
+#                                                             "bolzano"   = "bz",
+#                                                             "merano"   = "mr",                                                   "bressanone"  = "bx"))
+#}
+
 
 #-- preparo per l'export del dominio geo (gemeinde)
 
@@ -155,27 +158,25 @@ write.csv(ddf,file = paste(directoryddf,'ddf--datapoints--indicators--by--geo--t
 concepts <- read.xlsx(paste(directorydati,"concepts.xlsx", sep="/"))
 setDT(concepts)
 
+if (Lingua=="Deutsch") col_to_remove<-"_IT$" else col_to_remove <- "_DE$"
+drop.cols<-grep(col_to_remove,colnames(concepts))
+concepts[,(drop.cols):= NULL]
+colnames(concepts)<-sub(paste0("_",toupper(substr(Lingua,1,2))),"",colnames(concepts))
 
-concepts_DE<-subset(concepts,select=c("concept","concept_type","domain","description_DE","name_DE","drill_up"))
-setnames(concepts_DE,c("description_DE","name_DE"),c("description","name"))
-
-
-output_DE<- write.csv(concepts_DE,
-                    file= paste(directoryddf,"ddf--concepts.csv",sep="/"),
-                    row.names = FALSE,
-                    fileEncoding = "UTF-8",
-                    quote=match(c("description","name"),colnames(concepts_DE)),
-                    na="")
-View(output_DE)
-
-concepts_IT<-subset(concepts,select=c("concept","concept_type","domain","description_IT","name_IT","drill_up"))
-setnames(concepts_IT,c("description_IT","name_IT"),c("description","name"))
+#concepts_DE<-subset(concepts,select=c("concept","concept_type","domain","description_DE","name_DE","drill_up"))
+# setnames(concepts_DE,c("description_DE","name_DE"),c("description","name"))
 
 
-output_IT<-write.csv(concepts_IT,
-                                 file= paste(directoryddf,"ddf--concepts.csv",sep="/"),
-                                 row.names = FALSE,
-                                 fileEncoding = "UTF-8",
-                                 quote=match(c("description","name"),colnames(concepts_IT)),
-                                 na="")
-View(output_IT)
+
+#concepts_IT<-subset(concepts,select=c("concept","concept_type","domain","description_IT","name_IT","drill_up"))
+#setnames(concepts_IT,c("description_IT","name_IT"),c("description","name"))
+
+
+write.csv(concepts,
+          file= paste(directoryddf,"ddf--concepts.csv",sep="/"),
+          row.names = FALSE,
+          fileEncoding = "UTF-8",
+          quote=match(c("description","name"),colnames(concepts)),na="")
+          
+
+View(concepts)
