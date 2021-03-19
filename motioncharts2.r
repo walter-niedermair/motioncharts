@@ -14,7 +14,7 @@ directoryddf  <- sprintf('%s/ddf--%s-amb',directorymain,tolower(substr(Lingua,1,
 
 #-- creo la directory ddf se non esiste già
 
-if (!dir.exists(directoryddf)) dir.create(sprintf('%s/ddf--%s-amb',directorymain,lingua)) 
+if (!dir.exists(directoryddf)) dir.create(sprintf('%s/ddf--%s-amb',directorymain,tolower(substr(Lingua,1,2)))) 
 
 #-- leggo i nomi dei comuni, circoscrizioni, piccole aree funzionali, etc
 
