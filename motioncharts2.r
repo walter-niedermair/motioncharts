@@ -27,20 +27,42 @@ for(i in sheetsXLS){
   if(any(colnames(pippo)=="X")){pippo <- pippo[,1:(which(colnames(pippo)=="X")-1)]}
   pippo <- subset(pippo,Sys_Lingua==Lingua)
   pippo <- pippo[!names(pippo)=="Sys_Lingua"]
-  assign(paste0('GEM_', i), pippo)
+  assign(paste0('GEM_', i), setDT(pippo))
   rm(pippo)
 }
 
-#-- To remove all the non-alphanumeric characters
-GEM_Comuni$short <- tolower(gsub(" ", "", str_replace_all(GEM_Comuni$DescrizioneDimora, "[^[:alnum:]]", " "), fixed = TRUE))
-GEM_Comuni$short <- str_replace_all(GEM_Comuni$short,c("ü" = "ue", "ä" = "ae", "ö" = "oe", "ë" = "e"))
+# funzione da creare
+# df         = "GEM_Comuni","GEM_Com_AggrASDimora"
+# colnamein  = "DescrizioneDimora","Descrizione"
+# colnameout = "short"
 
-GEM <- merge(GEM_Comuni,GEM_Com_AggrASDimora,by="Com_AggrAS")
+CreaShort <- function(nomedf = "df", colnamein  = "Descrizione", colnameout = "short") {
+  #nomedf <- deparse(substitute(df))
+  df <-  eval(parse(text=nomedf))
+  if (substr(nomedf,1,12) != "GEM_Comuni") df <- df[get(colnames(df)[1]) != '?',]; set(df, NULL, as.integer(1), as.numeric(df[[1]])) # rimuovo righe con la chiave '?'
+  df$short <- tolower(gsub(" ", "", str_replace_all(df[,get(colnamein)], "[^[:alnum:]]", " "), fixed = TRUE))
+  if (substr(nomedf,1,12) != "GEM_Comuni") df$short <- paste0(tolower(substr(strsplit(nomedf,"_")[[1]][NROW(strsplit(nomedf,"_")[[1]])],5,nchar(strsplit(nomedf,"_")[[1]][NROW(strsplit(nomedf,"_")[[1]])]))),"_",df$short)
+  df$short <- str_replace_all(df$short,c("ü" = "ue", "ä" = "ae", "ö" = "oe", "ë" = "e"))
+#  if (substr(nomedf,1,10) != "GEM_Comuni") {
+#    df[ , eval(colnameout) := NULL] # rimuovo la colonna
+#    setnames(df, "short", colnameout) # rinomiono la colonna
+#  } 
+  assign(nomedf, df, envir = parent.frame())
+}
+
+CreaShort(nomedf="GEM_Comuni"           , colnamein  ="DescrizioneDimora")
+CreaShort(nomedf="GEM_Com_AggrASDimora" )#, colnameout ="Com_AggrAS")
+CreaShort(nomedf="GEM_Com_AggrPAFDimora")#, colnameout ="Com_AggrPAF")
+CreaShort(nomedf="GEM_Com_AggrDimora"   )#, colnameout ="Com_AggrDimora")
+CreaShort(nomedf="GEM_Com_AggrDimora_DC")#, colnameout ="Com_AggrDimora_DC")
+
+#-- merge per creare GEM
+
+GEM <- merge(GEM_Comuni,GEM_Com_AggrASDimora[,c("Com_AggrAS","Descrizione","short")],by="Com_AggrAS")
 GEM$Com_AggrAS <- NULL
-setnames(GEM,"Descrizione","Com_AggrAS")
+setnames(GEM,"short.x","short")
+setnames(GEM,"short.y","com_aggr_as")
 
-GEM$com_aggr_as <- paste0("as_",tolower(gsub(" ", "", str_replace_all(GEM$Com_AggrAS, "[^[:alnum:]]", " "), fixed = TRUE)))
-GEM$com_aggr_as <- str_replace_all(GEM$com_aggr_as,c("ü" = "ue", "ä" = "ae", "ö" = "oe", "ë" = "e"))
 
 #-- tolta la chiave "021", cambio formato da string a numeric
 GEM$gem <- as.integer(substr(GEM$Chiave,4,6)) 
@@ -48,25 +70,27 @@ GEM <- GEM[order(GEM$short),]
 
 #-- preparo per l'export del dominio geo (gemeinde)
 
-exp <- subset(GEM,select = c("short","DescrizioneDimora","com_aggr_as"))
+exp <- subset(GEM,select = c("short","DescrizioneDimora","com_aggr_as","svg"))
 setnames(exp,c("short","DescrizioneDimora"),c("gem","name"))
 setDT(exp)
 setcolorder(exp,"gem")
 exp$`is--gem` <- "true"
 
-setnames(exp,c("gem","com_aggr_as"),c("geo","bez"))
+setnames(exp,c("gem","com_aggr_as","svg"),c("geo","bez","shape_lores_svg"))
 write.csv(exp,file = paste(directoryddf,'ddf--entities--geo--gem.csv',sep = "/"),
           row.names = FALSE,fileEncoding = "UTF-8",quote=FALSE)
 
-list.files(directoryddf)
+#-- preparo per l'export del dominio geo (Com_AggrASDimora)
 
-as <- unique(subset(GEM,select = c("Com_AggrAS","com_aggr_as")))
-setnames(as,c("Com_AggrAS","com_aggr_as"),c("name","bez"))
-as$`is--bez` <- "true"
-setnames(as,"bez","geo")
-setDT(as)
-setcolorder(as,"geo")
-write.csv(as,file = paste(directoryddf,"ddf--entities--geo--bez.csv",sep = "/"),
+GEM_Com_AggrASDimora$Com_AggrAS <- NULL
+setnames(GEM_Com_AggrASDimora,"Descrizione","Com_AggrAS")
+setnames(GEM_Com_AggrASDimora,"short","com_aggr_as")
+setnames(GEM_Com_AggrASDimora,c("Com_AggrAS","com_aggr_as","svg"),c("name","bez","shape_lores_svg"))
+GEM_Com_AggrASDimora$`is--bez` <- "true"
+setnames(GEM_Com_AggrASDimora,"bez","geo")
+setDT(GEM_Com_AggrASDimora)
+setcolorder(GEM_Com_AggrASDimora,"geo")
+write.csv(GEM_Com_AggrASDimora,file = paste(directoryddf,"ddf--entities--geo--bez.csv",sep = "/"),
           row.names = FALSE,fileEncoding = "UTF-8",quote=FALSE)
 
 
