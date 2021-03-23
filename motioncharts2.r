@@ -51,10 +51,10 @@ CreaShort <- function(nomedf = "df", colnamein  = "Descrizione", colnameout = "s
 }
 
 CreaShort(nomedf="GEM_Comuni"           , colnamein  ="DescrizioneDimora")
-CreaShort(nomedf="GEM_Com_AggrASDimora" )#, colnameout ="Com_AggrAS")
-CreaShort(nomedf="GEM_Com_AggrPAFDimora")#, colnameout ="Com_AggrPAF")
-CreaShort(nomedf="GEM_Com_AggrDimora"   )#, colnameout ="Com_AggrDimora")
-CreaShort(nomedf="GEM_Com_AggrDimora_DC")#, colnameout ="Com_AggrDimora_DC")
+CreaShort(nomedf="GEM_Com_AggrASDimora" )
+CreaShort(nomedf="GEM_Com_AggrPAFDimora")
+CreaShort(nomedf="GEM_Com_AggrDimora"   )
+CreaShort(nomedf="GEM_Com_AggrDimora_DC")
 
 #-- merge per creare GEM
 
@@ -70,7 +70,7 @@ GEM <- GEM[order(GEM$short),]
 
 #-- preparo per l'export del dominio geo (gemeinde)
 
-exp <- subset(GEM,select = c("short","DescrizioneDimora","com_aggr_as","svg"))
+exp <- subset(GEM,select = c("short","color","DescrizioneDimora","com_aggr_as","svg"))
 setnames(exp,c("short","DescrizioneDimora"),c("gem","name"))
 setDT(exp)
 setcolorder(exp,"gem")
@@ -162,9 +162,9 @@ setnames(ddf,c("short"),c("geo"))
 write.csv(ddf,file = paste(directoryddf,'ddf--datapoints--indicators--by--geo--time.csv',sep = "/"),
           row.names = FALSE,fileEncoding = "UTF-8",quote=FALSE)
 
-#-- read file concepts.xlsx in d folder
+#-- read file concepts.xlsx - sheet CONCEPT in d folder
 
-concepts <- read.xlsx(paste(directorydati,"concepts.xlsx", sep="/"))
+concepts <- read.xlsx(paste(directorydati,"concepts.xlsx", sep="/"),sheet = "concept")
 setDT(concepts)
 
 if(Lingua=="Deutsch") col_to_remove <- "_IT$" else col_to_remove <- "_DE$"
@@ -177,7 +177,28 @@ write.csv(concepts,
           file= paste(directoryddf,"ddf--concepts.csv",sep="/"),
           row.names = FALSE,
           fileEncoding = "UTF-8",
-          quote=match(c("description","name"),colnames(concepts)),
+          quote=match(c("description","name","name_catalog","name_short"),colnames(concepts)),
           na=""
           )
+
+#-- read file concepts.xlsx - sheet TAG in d folder
+
+tags <- read.xlsx(paste(directorydati,"concepts.xlsx", sep="/"),sheet = "tag")
+setDT(tags)
+
+if(Lingua=="Deutsch") col_to_remove <- "_IT$" else col_to_remove <- "_DE$"
+drop.cols <- grep(col_to_remove,colnames(tags))
+tags[, (drop.cols) := NULL]
+
+colnames(tags) <- sub(paste0("_",toupper(substr(Lingua,1,2))), "", colnames(tags))
+
+write.csv(tags,
+          file= paste(directoryddf,"ddf--entities--tag.csv",sep="/"),
+          row.names = FALSE,
+          fileEncoding = "UTF-8",
+          quote=match(c("name"),colnames(tags)),
+          na=""
+)
+
+
 
