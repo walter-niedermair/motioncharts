@@ -177,7 +177,7 @@ write.csv(concepts,
           file= paste(directoryddf,"ddf--concepts.csv",sep="/"),
           row.names = FALSE,
           fileEncoding = "UTF-8",
-          quote=match(c("description","name","name_catalog","name_short"),colnames(concepts)),
+          quote=match(c("description","name","name_catalog","name_short","tags","scales","source"),colnames(concepts)),
           na=""
           )
 
