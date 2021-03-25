@@ -1,42 +1,90 @@
-if (!require("openxlsx"))   install.packages("openxlsx")   ; library (openxlsx)
 if (!require("data.table")) install.packages("data.table") ; library (data.table)
-if (!require("stringr"))    install.packages("stringr")    ; library (stringr)
-
 
 getwd()
 DIR<-getwd()
-directorydati<-"C:/Users/nicol/Desktop/PROGETTO/motioncharts/d"
-directorydati<-paste(DIR,"d",sep="/")
-
-
+directorydati<-paste(DIR,"d",sep="/") 
 
 # file Covid Protezione Civile
 
-dati.PC<-read.csv(file =paste(directorydati,"Corona.Data.Detail.csv",sep="/"),header=TRUE, sep=";")
-setDT(dati.PC)
-# Eliminazione colonna 3
-## Perchè eliminare la colonna 3 (la data ci serve, voremmo avere l'andamento per giorno e per comune)
-dati.PC<-dati.PC[,-3]
+dati.PC<-read.csv(file=paste(DIR,"d","Corona.Data.Detail.csv",sep="/"),header=TRUE, sep=";")
 
-setnames(dati.PC,c("istat","nome"),c("ISTAT_code","name_IT"))
-str(dati.PC)
+str(dati.PC) # struttura data.frame
 
-dati.PC[,c("ISTAT_code","positiv","antigen","pcr.pos.geh..tote","quarantaene","pcr.pos.geh..antigen.pos.geh..tote")]<-as.numeric(dati.PC[,c("ISTAT_code","positiv","antigen","pcr.pos.geh..tote","quarantaene","pcr.pos.geh..antigen.pos.geh..tote")])
-View(dati.PC)
+View(table(dati.PC$istat)) # Frequenze per codice istat
+unique(substr(dati.PC$istat,1,2))
 
-# file 
 
-dati.Comuni.BZ<-read.csv(file = paste(directorydati,"covid19_bz_municipalities.csv",sep="/") ,header=TRUE, sep=",")
-View(dati.Comuni.BZ)
-setDT(dati.Comuni.BZ)
-colnames(dati.Comuni.BZ)
+new.dati.PC <- subset(dati.PC,substr(dati.PC$istat,1,2)==21,select=c("istat","datum","sumPos.pcr.antigen."))
+colnames(new.dati.PC)
+
+unique(new.dati.PC$istat)
+new.dati.PC$datum<-as.Date(new.dati.PC$datum)
+str(new.dati.PC)
+
+plot(new.dati.PC$datum,new.dati.PC$sumPos.pcr.antigen.)
+
+
+dati.Comuni.BZ<-read.csv(file =paste(directorydati,"covid19_bz_municipalities.csv", sep="/"),header=TRUE, sep=";")
+
 str(dati.Comuni.BZ)
+View(dati.Comuni.BZ)
+
+unique(dati.Comuni.BZ$ISTAT_code)
 
 dati.Comuni.BZ$ISTAT_code<-as.numeric(dati.Comuni.BZ$ISTAT_code)
-dati.PC$ISTAT_code<-as.numeric(dati.PC$ISTAT_code)
-Covid.data<-merge(dati.PC,dati.Comuni.BZ, by=c("ISTAT_code","name_IT"))
+
+#dati.Comuni.BZ$datum<-as.Date(dati.Comuni.BZ$datum,format= "%m/%d/%y") # produce NAs as a result
+
+View(new.dati.PC$datum)
+dati.Comuni.BZ$datum <- format(as.Date(dati.Comuni.BZ$datum, format = "%d/%m/%Y"), "%Y-%m-%d")
+View(dati.Comuni.BZ$datum)
+
+
+
+
+substr(dati.Comuni.BZ$ISTAT_code,1,2)## primi due caratteri 
+
+new.dati.Comuni.BZ <- subset(dati.Comuni.BZ,substr(dati.Comuni.BZ$ISTAT_code,1,2)==21, select=c("ISTAT_code","datum","totals"))
+View(new.dati.Comuni.BZ)
+
+str(new.dati.Comuni.BZ)
+new.dati.Comuni.BZ$datum<-as.Date(new.dati.Comuni.BZ$datum, format= "%Y-%m-%d")
+
+# new.dati.Comuni.BZ$datum <- format(as.Date(new.dati.Comuni.BZ$datum, format = "%d/%m/%Y"), "%Y-%m-%d") sbagliato il formato
+
+
+colnames(new.dati.Comuni.BZ)
+colnames(new.dati.PC)
+
+setnames(new.dati.PC,c("istat","sumPos.pcr.antigen."),c("ISTAT_code","totals"))
+colnames(new.dati.PC)
+
+
+# inoltre le colonne comuni nei due dataset dovrebbero essere i seguenti: datum, comune(codice istat), contaggi, e altri indicatori di contaggio. 
+# Per l'analisi i singoli comuni fuori provincia possono essere raggruppati in una singola voce: fuori provincia e con il codice '888' o '999' come preferisci
+
+# mettere insieme i due dataset con la funzione rbind (row bind),
+
+Covid.data <- rbind(new.dati.Comuni.BZ,new.dati.PC)
 View(Covid.data)
 
-## al posto del merge dobbiamo mettere insieme i due dataset con la funzione rbind (row bind), praticamente concatenando i due, uno va fino al 21.12.2020 e l'altro parte il 18.12.2020, cosi possiamo avere un dataset unico che contiene dati dal marzo 2020 fino alla data attuale.
-## piccolo hint: formattare la date in entrambi con as.Date  esempio: dati.Comuni.BZ$datum <- as.Date(dati.Comuni.BZ$datum)
-## inoltre le colonne comuni nei due dataset dovrebbero essere i seguenti: datum, comune(codice istat), contaggi, e altri indicatori di contaggio. Per l'analisi i singoli comuni fuori provincia possono essere raggruppati in una singola voce: fuori provincia e con il codice '888' o '999' come preferisci
+
+# structure
+
+str(Covid.data) 
+
+Covid.data$ISTAT_code<-as.numeric(Covid.data$ISTAT_code) # Format change: character > numeric
+
+# View(new.dati.PC$datum)        # Beginndatum:18-12-2020 Enddatum: 22-03-2021
+# View(new.dati.Comuni.BZ$datum) # Inizio: 18-03-2020 e fine 21-12-2020
+
+# View(Covid.data$datum)         # Beginndatum: 18-12-2020 Enddatum: 22-03-2021
+
+
+# Nuova Colonna con Lag 
+
+library(zoo)
+Covid.data$nuovi_casi <-lag(Covid.data$totals,1) # da chiedere a Walter se è corretto. 
+View(Covid.data)
+nuovi_casi<-diff(Covid.data$totals)
+View(nuovi_casi)
