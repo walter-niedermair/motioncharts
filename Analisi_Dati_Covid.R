@@ -24,7 +24,7 @@ str(new.dati.PC)
 plot(new.dati.PC$datum,new.dati.PC$sumPos.pcr.antigen.)
 
 
-dati.Comuni.BZ<-read.csv(file =paste(directorydati,"covid19_bz_municipalities.csv", sep="/"),header=TRUE, sep=";")
+dati.Comuni.BZ<-read.csv(file =paste(directorydati,"covid19_bz_municipalities.csv", sep="/"),header=TRUE, sep=",")
 
 str(dati.Comuni.BZ)
 View(dati.Comuni.BZ)
@@ -59,6 +59,9 @@ colnames(new.dati.PC)
 setnames(new.dati.PC,c("istat","sumPos.pcr.antigen."),c("ISTAT_code","totals"))
 colnames(new.dati.PC)
 
+new.dati.Comuni.BZ <- subset(new.dati.Comuni.BZ, datum< as.Date("2020-12-18"))
+
+
 
 # inoltre le colonne comuni nei due dataset dovrebbero essere i seguenti: datum, comune(codice istat), contaggi, e altri indicatori di contaggio. 
 # Per l'analisi i singoli comuni fuori provincia possono essere raggruppati in una singola voce: fuori provincia e con il codice '888' o '999' come preferisci
@@ -75,16 +78,37 @@ str(Covid.data)
 
 Covid.data$ISTAT_code<-as.numeric(Covid.data$ISTAT_code) # Format change: character > numeric
 
-# View(new.dati.PC$datum)        # Beginndatum:18-12-2020 Enddatum: 22-03-2021
-# View(new.dati.Comuni.BZ$datum) # Inizio: 18-03-2020 e fine 21-12-2020
+pippo<-subset(Covid.data,ISTAT_code==21008,select=c("datum","totals"))
 
-# View(Covid.data$datum)         # Beginndatum: 18-12-2020 Enddatum: 22-03-2021
+plot(pippo, type = "l")
+
+setDT(Covid.data)
 
 
 # Nuova Colonna con Lag 
 
-library(zoo)
-Covid.data$nuovi_casi <-lag(Covid.data$totals,1) # da chiedere a Walter se è corretto. 
+library(data.table)
+
+Covid.data[, lag.value:=c(NA, totals[-.N]), by="ISTAT_code"]
 View(Covid.data)
-nuovi_casi<-diff(Covid.data$totals)
-View(nuovi_casi)
+
+Covid.data$nuovi_contagi <- Covid.data$totals- Covid.data$lag.value
+
+pippo <- subset(Covid.data, ISTAT_code == 21008, select = c("datum","nuovi_contagi"))
+
+plot(pippo, type= "p")
+
+# to do: per ogni comune plottare bar charts and line
+
+# for loop
+
+codice.istat <- 21001:21118
+
+for(comune in codice.istat){
+  nuovi.contagi<- subset(Covid.data,ISTAT_code == comune,select="nuovi_contagi")
+  barplot(nuovi_contagi)
+}
+
+
+
+## create a pdf file through the function dev.pdf
