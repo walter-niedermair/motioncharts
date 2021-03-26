@@ -1,5 +1,7 @@
 if (!require("data.table")) install.packages("data.table") ; library (data.table)
 
+library(ggplot2)
+
 getwd()
 DIR<-getwd()
 directorydati<-paste(DIR,"d",sep="/") 
@@ -10,7 +12,7 @@ dati.PC<-read.csv(file=paste(DIR,"d","Corona.Data.Detail.csv",sep="/"),header=TR
 
 str(dati.PC) # struttura data.frame
 
-View(table(dati.PC$istat)) # Frequenze per codice istat
+#View(table(dati.PC$istat)) # Frequenze per codice istat
 unique(substr(dati.PC$istat,1,2))
 
 
@@ -80,7 +82,9 @@ Covid.data$ISTAT_code<-as.numeric(Covid.data$ISTAT_code) # Format change: charac
 
 pippo<-subset(Covid.data,ISTAT_code==21008,select=c("datum","totals"))
 
-plot(pippo, type = "l")
+plot(pippo, type = "p")
+lines(pippo)
+
 
 setDT(Covid.data)
 
@@ -89,26 +93,79 @@ setDT(Covid.data)
 
 library(data.table)
 
+setDT(Covid.data)
+
 Covid.data[, lag.value:=c(NA, totals[-.N]), by="ISTAT_code"]
 View(Covid.data)
 
 Covid.data$nuovi_contagi <- Covid.data$totals- Covid.data$lag.value
 
 pippo <- subset(Covid.data, ISTAT_code == 21008, select = c("datum","nuovi_contagi"))
-
+View(pippo)
 plot(pippo, type= "p")
+lines(pippo)
 
-# to do: per ogni comune plottare bar charts and line
+table(pippo$nuovi_contagi) ## frequency table for new cases
+
+# utilizzando bar plot
+
+grafico.pippo<-barplot(pippo$nuovi_contagi, main= "Nuovi contagi giornalieri", xlab= "Giorno", ylab="Nuovi_casi", names.arg = pippo$datum, col="red") ## bar chart of the new cases for Bolzano
+
+# 
+
+library(Cairo)
+
+View(pippo)
+
+pippo<-as.data.frame(pippo)
+typeof(pippo$datum)
+pippo$datum<-as.Date(pippo$datum)
+
+str(pippo)
+
+pippo.grafico <- ggplot(pippo, aes(x = "datum", y = "nuovi_contagi")) +
+  geom_bar(data = pippo) +
+  annotate("text", x = 0, y = 0, label = "nuovi_casi_giornalieri",
+           family = "Papyrus", color = "darkred", size = 8) +
+  labs(title = "Nuovi_contagi_giornalieri") +
+  theme_light(base_family = "Comic Sans MS")
+
+pippo.grafico
+
+rlang::last_error()
+
+ggsave(pippo.grafico,filename = paste(DIR,"d","prova1.pdf",sep="/"),device = cairo_pdf,
+       width = 4, height = 3, units = "in")
+
 
 # for loop
 
-codice.istat <- 21001:21118
+View(Covid.data$ISTAT_code)
 
-for(comune in codice.istat){
-  nuovi.contagi<- subset(Covid.data,ISTAT_code == comune,select="nuovi_contagi")
-  barplot(nuovi_contagi)
-}
+codice.istat <- c(21001:21118)
+
+for (comune in codice.istat){
+  nuovi_casi[comune]<-subset(Covid.data,Covid.data$ISTAT_code==comune,select= c("datum","nuovi_contagi"))
+  plot(nuovi_casi)
+  lines(nuovi_casi)
+  }
+nuovi_casi[21009]
+
+
+# new.cases<- function(comune){
+# for(comune in codice.istat){
+# nuovi.contagi[comune]<-subset(Covid.data,Covid.data$ISTAT_code==comune,select=c("datum","nuovi_contagi"))
+# print(nuovi.contagi)
+# grafico.nuovi.contagi<-ggplot(data=nuovi.contagi, aes(x= "datum", y="nuovi_contagi")) +
+# geom_bar(stat="identity")
+  
+# }
+# return(nuovi.contagi)
+# return(grafico.nuovi.contagi)
+# }
 
 
 
-## create a pdf file through the function dev.pdf
+
+
+
