@@ -29,7 +29,7 @@ plot(new.dati.PC$datum,new.dati.PC$sumPos.pcr.antigen.)
 dati.Comuni.BZ<-read.csv(file =paste(directorydati,"covid19_bz_municipalities.csv", sep="/"),header=TRUE, sep=",")
 
 str(dati.Comuni.BZ)
-View(dati.Comuni.BZ)
+#View(dati.Comuni.BZ)
 
 unique(dati.Comuni.BZ$ISTAT_code)
 
@@ -37,9 +37,9 @@ dati.Comuni.BZ$ISTAT_code<-as.numeric(dati.Comuni.BZ$ISTAT_code)
 
 #dati.Comuni.BZ$datum<-as.Date(dati.Comuni.BZ$datum,format= "%m/%d/%y") # produce NAs as a result
 
-View(new.dati.PC$datum)
+#View(new.dati.PC$datum)
 dati.Comuni.BZ$datum <- format(as.Date(dati.Comuni.BZ$datum, format = "%d/%m/%Y"), "%Y-%m-%d")
-View(dati.Comuni.BZ$datum)
+#View(dati.Comuni.BZ$datum)
 
 
 
@@ -47,7 +47,7 @@ View(dati.Comuni.BZ$datum)
 substr(dati.Comuni.BZ$ISTAT_code,1,2)## primi due caratteri 
 
 new.dati.Comuni.BZ <- subset(dati.Comuni.BZ,substr(dati.Comuni.BZ$ISTAT_code,1,2)==21, select=c("ISTAT_code","datum","totals"))
-View(new.dati.Comuni.BZ)
+#View(new.dati.Comuni.BZ)
 
 str(new.dati.Comuni.BZ)
 new.dati.Comuni.BZ$datum<-as.Date(new.dati.Comuni.BZ$datum, format= "%Y-%m-%d")
@@ -71,7 +71,7 @@ new.dati.Comuni.BZ <- subset(new.dati.Comuni.BZ, datum< as.Date("2020-12-18"))
 # mettere insieme i due dataset con la funzione rbind (row bind),
 
 Covid.data <- rbind(new.dati.Comuni.BZ,new.dati.PC)
-View(Covid.data)
+#View(Covid.data)
 
 
 # structure
@@ -115,7 +115,7 @@ grafico.pippo<-barplot(pippo$nuovi_contagi, main= "Nuovi contagi giornalieri", x
 
 library(Cairo)
 
-View(pippo)
+#View(pippo)
 
 pippo<-as.data.frame(pippo)
 typeof(pippo$datum)
@@ -136,36 +136,40 @@ rlang::last_error()
 
 ggsave(pippo.grafico,filename = paste(DIR,"d","prova1.pdf",sep="/"),device = cairo_pdf,
        width = 4, height = 3, units = "in")
+library(Cairo)
 
+CairoPDF(pippo.grafico, file = paste(DIR,"d","prova1.pdf",sep="/"),bg="transparent")
+dev.off()
 
 # for loop
 
-View(Covid.data$ISTAT_code)
+#View(Covid.data$ISTAT_code)
 
 codice.istat <- c(21001:21118)
 
+new.cases <- function(comune){
 for (comune in codice.istat){
-  nuovi_casi[comune]<-subset(Covid.data,Covid.data$ISTAT_code==comune,select= c("datum","nuovi_contagi"))
-  plot(nuovi_casi)
-  lines(nuovi_casi)
-  }
-nuovi_casi[21009]
+ nuovi_casi<- subset(Covid.data,Covid.data$ISTAT_code==comune,select=c("datum","nuovi_contagi"))
+ grafico.nuovi_casi<-barplot(nuovi_casi$nuovi_contagi, main= "Nuovi contagi giornalieri", xlab= "Giorno", ylab="Nuovi_casi", names.arg = nuovi_casi$datum, col="red") ## bar chart of the new cases for Bolzano
+ cairoPDF(grafico.nuovi_casi,file=(paste(DIR,"d","prova2.pdf",sep="/")))
+ return(nuovi_casi)
+}
+}
+
+new.cases(21010)
+head(new.cases(21008))
+## head(new.cases(21008))
+## datum nuovi_contagi
+## 1 2020-12-18            NA
+## 2 2020-12-19             1
+## 3 2020-12-20             0
+## 4 2020-12-21             0
+## 5 2020-12-22             0
+## 6 2020-12-23             2
 
 
-# new.cases<- function(comune){
-# for(comune in codice.istat){
-# nuovi.contagi[comune]<-subset(Covid.data,Covid.data$ISTAT_code==comune,select=c("datum","nuovi_contagi"))
-# print(nuovi.contagi)
-# grafico.nuovi.contagi<-ggplot(data=nuovi.contagi, aes(x= "datum", y="nuovi_contagi")) +
-# geom_bar(stat="identity")
-  
-# }
-# return(nuovi.contagi)
-# return(grafico.nuovi.contagi)
-# }
-
-
-
+new.cases(21011)
+head(new.cases(21011))
 
 
 
