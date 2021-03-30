@@ -1,8 +1,10 @@
 if (!require("data.table")) install.packages("data.table") ; library (data.table)
-library(stringr)
-library(data.table)
+if (!require("openxlsx"))   install.packages("openxlsx")   ; library (openxlsx)
+if (!require("stringr"))    install.packages("stringr")    ; library (stringr)
+if (!require("Cairo"))      install.packages("Cairo")      ; library (Cairo)
+
 library(ggplot2)
-library(Cairo)
+
 
 getwd()
 DIR<-getwd()
@@ -108,6 +110,18 @@ pippo[303,] # outlier: observation on 2021-02-12         10539
 
 plot(pippo[-303], type= "p")
 plot(pippo[-303],type="l")
+
+# idea per compilare valori mancanti
+bz20210209 <- subset(dati.PC,istat==21008&datum=="2021-02-09",select=c("positiv"))
+bz20210212 <-  subset(dati.PC,istat==21008&datum=="2021-02-12",select=c("positiv"))
+# esempio per Bolzano
+#> 10539-10315
+#[1] 224
+#> (10539-10315)/2
+#[1] 112
+#> (10539-10315)/3
+#[1] 74.66667
+
  
 table(pippo$nuovi_contagi) ## frequency table for new cases
 
@@ -137,14 +151,29 @@ for(i in sheetsXLS){
 }
 
 
-#codice.istat <- sort(unique(new.Covid.data$ISTAT_code))
+pluto <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Comuni")
+#> colnames(pluto)
+#[1] "Chiave"                "Sys_Lingua"            "DescrizioneDimora_DC"  "DescrizioneLLavoro_DC" "DescrizioneDimora"    
+#[6] "DescrizioneLLavoro"    "Descr_shortDimora"     "Descr_shortLLavoro"    "DescrizioneDimoraDis"  "Com_AggrDimora"       
+#[11] "Com_AggrDimora_DC"     "Com_AggrLLavoro"       "Com_AggrLLavoro_DC"    "Com_AggrDimoraDis"     "Com_AggrCP"           
+#[16] "Com_AggrAS"            "Com_AggrPAF" 
 
-nome.comune<-subset(dati.PC,dati.PC$ISTAT_code==c(21001:21118), select=c("ISTAT_code","name","nome"))
+pluto$Chiave <- as.numeric(pluto$Chiave)
 
-codice.istat<-nome.comune$ISTAT_code
+codice.istat <- sort(unique(Covid.data$ISTAT_code))
 
-if(Lingua=="Deutsch") {codice.istat<-nome.comune$name} 
-else {codice.istat<-nome.comune$nome}
+
+# 78 90
+#nome.comune<-subset(dati.PC,dati.PC$ISTAT_code==c(21001:21118), select=c("ISTAT_code","name","nome"))
+
+#codice.istat<-nome.comune$ISTAT_code
+
+#if(Lingua=="Deutsch") {
+#  codice.istat<-nome.comune$name} 
+#else {codice.istat<-nome.comune$nome}
+
+#### pluto[pluto$Sys_Lingua==Lingua&Chiave==comune,c("Descr_shortDimora")]
+
 
 
   CairoPDF("test.pdf",width = 10, height = 14)
@@ -158,8 +187,8 @@ for (comune in codice.istat){
   #            col="red",
   #            border =NA) 
   
-pippo <- subset(Covid.data,ISTAT_code==comune,select= c("datum","totals","nuovi_contagi"))
-plot(pippo$nuovi_contagi, type= "l",main=paste("Nuovi contagi giornalieri",comune,sep = "\n"))
-plot(pippo$totals, type="h")
+ pippo <- subset(Covid.data,ISTAT_code==comune,select= c("datum","totals","nuovi_contagi"))
+  plot(pippo$nuovi_contagi, type= "l",main=paste("Nuovi contagi giornalieri",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n"))
+  plot(pippo$totals, type="h")
   }
 dev.off()
