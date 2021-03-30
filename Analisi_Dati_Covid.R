@@ -1,13 +1,43 @@
+#############################################################
+## zoo and xts - na.locf
+# https://campus.datacamp.com/courses/manipulating-time-series-data-with-xts-and-zoo-in-r/merging-and-modifying-time-series?ex=6
+#
+## imputeTS - na.mean
+# https://cran.r-project.org/web/packages/imputeTS/imputeTS.pdf
+# https://stackoverflow.com/questions/9322773/how-to-replace-na-with-mean-by-group-subset
+#
+#############################################################
+
+
+#############################################################
+# packages and libraries
+#############################################################
+
 if (!require("data.table")) install.packages("data.table") ; library (data.table)
 if (!require("openxlsx"))   install.packages("openxlsx")   ; library (openxlsx)
 if (!require("stringr"))    install.packages("stringr")    ; library (stringr)
 if (!require("Cairo"))      install.packages("Cairo")      ; library (Cairo)
-if (!require("zoo"))      install.packages("zoo")      ; library (zoo)
-if (!require("xts"))      install.packages("xts")      ; library (xts)
+if (!require("zoo"))        install.packages("zoo")        ; library (zoo)
+if (!require("xts"))        install.packages("xts")        ; library (xts)
+if (!require("imputeTS"))   install.packages("imputeTS")   ; library (imputeTS)
+
+#############################################################
+## define directories
+#############################################################
 
 getwd()
 DIR<-getwd()
 directorydati<-paste(DIR,"d",sep="/") 
+
+#############################################################
+# read and/or define functions
+#############################################################
+
+impute.mean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
+
+#############################################################
+# Read data
+#############################################################
 
 # file Covid Protezione Civile
 
@@ -30,7 +60,7 @@ str(new.dati.PC)
 null.data<-subset(new.dati.PC,new.dati.PC$positiv=="null")## recurrent pattern: 2021-02-10 & 2021-02-11
 View(null.data)
 
-new.dati.PC$positiv<-as.integer(new.dati.PC$positiv) 
+new.dati.PC$positiv<-as.numeric(new.dati.PC$positiv) 
 
 plot(new.dati.PC$datum,new.dati.PC$positiv)
 
@@ -40,7 +70,20 @@ Aldein<-subset(new.dati.PC,new.dati.PC$istat==21001)
 View(Aldein)
 str(Aldein)
 Aldein$datum<-as.Date(Aldein$datum)
-Aldein$positiv<-as.integer(Aldein$positiv)
+Aldein$positiv<-as.numeric(Aldein$positiv)
+
+#############################################################
+# soluzione 1 - data.table con funzione definita sopra "impute.mean" 
+# questa funzione mette il overall mean al posto del valore mancante
+setDT(new.dati.PC)
+new.dati.PC[, positiv := impute.mean(positiv), by = "istat"]
+#############################################################
+# soluzione 2 - data.table con funzione "na_interpolation" dal pacchetto imputeTS 
+# questa funzione fa una interpolazione "lineare" o altra per i valori missing
+setDT(new.dati.PC)
+new.dati.PC[, positiv := na_interpolation(positiv, option = "linear"), by = "istat"]
+#############################################################
+
 
 which(is.na(Aldein$positiv))
 which(Aldein$datum=="2021-02-09"|Aldein$datum=="2021-02-12") ## to check the position of obs corresponding to the dates 
