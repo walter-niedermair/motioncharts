@@ -27,6 +27,7 @@ if (!require("imputeTS"))   install.packages("imputeTS")   ; library (imputeTS)
 #############################################################
 ## define directories
 #############################################################
+
 getwd()
 DIR<-getwd()
 directorydati<-paste(DIR,"d",sep="/")
@@ -35,15 +36,11 @@ directorydati<-paste(DIR,"d",sep="/")
 # read and/or define functions
 #############################################################
 
-impute.mean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
+# impute.mean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
 
 #############################################################
 # Read data
 #############################################################
-
-getwd()
-DIR<-getwd()
-directorydati<-paste(DIR,"d",sep="/") 
 
 # file Covid Protezione Civile
 
@@ -64,26 +61,18 @@ new.dati.PC$datum<-as.Date(new.dati.PC$datum)
 str(new.dati.PC)
 
 null.data<-subset(new.dati.PC,new.dati.PC$positiv=="null")## recurrent pattern: 2021-02-10 & 2021-02-11
-View(null.data)
+#View(null.data)
 
 new.dati.PC$positiv<-as.numeric(new.dati.PC$positiv) 
 
 plot(new.dati.PC$datum,new.dati.PC$positiv)
 
-# Aldein - 21001
-
-Aldein<-subset(new.dati.PC,new.dati.PC$istat==21001)
-View(Aldein)
-str(Aldein)
-Aldein$datum<-as.Date(Aldein$datum)
-Aldein$positiv<-as.numeric(Aldein$positiv)
-
-
 #############################################################
 # soluzione 1 - data.table con funzione definita sopra "impute.mean" 
 # questa funzione mette il overall mean al posto del valore mancante
-setDT(new.dati.PC)
-new.dati.PC[, positiv := impute.mean(positiv), by = "istat"]
+## soluzione non più utilizzata
+# setDT(new.dati.PC)
+# new.dati.PC[, positiv := impute.mean(positiv), by = "istat"]
 #############################################################
 # soluzione 2 - data.table con funzione "na_interpolation" dal pacchetto imputeTS 
 # questa funzione fa una interpolazione "lineare" o altra per i valori missing
@@ -91,42 +80,39 @@ setDT(new.dati.PC)
 new.dati.PC[, positiv := na_interpolation(positiv, option = "linear"), by = "istat"]
 #############################################################
 
+# uso if (0) per definire una parte di codice che non viene eseguita, perchè non usata o candidato per essere cancellato
+if(0) {
+  which(is.na(Aldein$positiv))
+  which(Aldein$datum=="2021-02-09"|Aldein$datum=="2021-02-12") ## to check the position of obs corresponding to the dates 
+  
+  # metodo poco efficiente e mi trasforma tutti i valori della colonna in decimale
+  Aldein$positiv[is.na(Aldein$positiv)]<-round(mean(c(Aldein[Aldein$datum=="2021-02-09"|Aldein$datum=="2021-02-12","positiv"])),digits=0)
+  
+  View(Aldein)
+  
+  # trasformare Aldein in ts 
+  
+  Aldein<-subset(new.dati.PC,new.dati.PC$istat==21001)
+  View(Aldein)
+  
+  Aldein.ts<-xts(Aldein$positiv,order.by=Aldein$datum)
+  View(Aldein.ts)
+  Aldein.ts<-zoo(Aldein.ts)
 
+  ## definizione di una funzione che dipende dalla data e dal comune
+  
+  codice<-new.dati.PC$ISTAT_code
+  data<- c("2021-02-10","2021-02-11")
+  data<-as.Date(data)
+  View(data)
 
-
-
-
-
-which(is.na(Aldein$positiv))
-which(Aldein$datum=="2021-02-09"|Aldein$datum=="2021-02-12") ## to check the position of obs corresponding to the dates 
-
-# metodo poco efficiente e mi trasforma tutti i valori della colonna in decimale
-Aldein$positiv[is.na(Aldein$positiv)]<-round(mean(c(Aldein[Aldein$datum=="2021-02-09"|Aldein$datum=="2021-02-12","positiv"])),digits=0)
-
-View(Aldein)
-
-# trasformare Aldein in ts 
-
-Aldein<-subset(new.dati.PC,new.dati.PC$istat==21001)
-View(Aldein)
-
-Aldein.ts<-xts(Aldein$positiv,order.by=Aldein$datum)
-View(Aldein.ts)
-Aldein.ts<-zoo(Aldein.ts)
-
-## definizione di una funzione che dipende dalla data e dal comune
-
-codice<-new.dati.PC$ISTAT_code
-data<- c("2021-02-10","2021-02-11")
-data<-as.Date(data)
-View(data)
-
-myfunction<-function(codice,data){
-  for (i in codice )
-  prova<-subset(new.dati.PC,new.dati.PC$ISTAT_code==codice)
-  if(any(prova$datum==data)){prova$totals<- round(mean(prova$totals[data+1],prova$totals[data-1], digits=0))
-  }
-  }
+  myfunction<-function(codice,data){
+    for (i in codice )
+    prova<-subset(new.dati.PC,new.dati.PC$ISTAT_code==codice)
+    if(any(prova$datum==data)){prova$totals<- round(mean(prova$totals[data+1],prova$totals[data-1], digits=0))
+    }
+    }
+}
 
 dati.Comuni.BZ<-read.csv(file =paste(directorydati,"covid19_bz_municipalities.csv", sep="/"),header=TRUE, sep=",")
 
@@ -143,13 +129,13 @@ dati.Comuni.BZ$ISTAT_code<-as.numeric(dati.Comuni.BZ$ISTAT_code)
 
 dati.Comuni.BZ$datum <- as.Date(dati.Comuni.BZ$datum)
 
-substr(dati.Comuni.BZ$ISTAT_code,1,2)## primi due caratteri 
+#substr(dati.Comuni.BZ$ISTAT_code,1,2)## primi due caratteri 
 
 new.dati.Comuni.BZ <- subset(dati.Comuni.BZ,substr(dati.Comuni.BZ$ISTAT_code,1,2)==21, select=c("ISTAT_code","datum","totals"))
 
-View(new.dati.Comuni.BZ)
+#View(new.dati.Comuni.BZ)
 
-str(new.dati.Comuni.BZ)
+#str(new.dati.Comuni.BZ)
 new.dati.Comuni.BZ$datum<-as.Date(new.dati.Comuni.BZ$datum)
 
 
@@ -161,16 +147,16 @@ colnames(new.dati.PC)
 
 new.dati.Comuni.BZ <- subset(new.dati.Comuni.BZ, datum< as.Date("2020-12-18"))
 
-View(new.dati.Comuni.BZ)
+#View(new.dati.Comuni.BZ)
 
 
 Covid.data <- rbind(new.dati.Comuni.BZ,new.dati.PC)
-View(Covid.data)
+#View(Covid.data)
 
 
 # structure
 
-str(Covid.data) 
+#str(Covid.data) 
 
 Covid.data$ISTAT_code<-as.numeric(Covid.data$ISTAT_code) # Format change: character > numeric
 
@@ -179,45 +165,37 @@ setDT(Covid.data)
 
 # Nuova Colonna con Lag 
 
-library(data.table)
-
-setDT(Covid.data)
-Covid.data
+#setDT(Covid.data)
 
 Covid.data[, lag.value:=c(NA, totals[-.N]), by="ISTAT_code"]
-View(Covid.data)
 
 Covid.data$lag.value[is.na(Covid.data$lag.value)]<-0
 
 Covid.data$nuovi_contagi <- Covid.data$totals- Covid.data$lag.value
 
-View(Covid.data)
+if(0) {
+  pippo <- subset(Covid.data, ISTAT_code == 21008, select = c("datum","nuovi_contagi"))
+  View(pippo)
+  plot(pippo, type= "p")
+  # identify the outlier
+  identify(pippo, n=2)  # observation n 303: outlier
+  
+  pippo[-c(301,303),] # outliers
+  
+  plot(pippo[-c(301,303)], type= "p")
+  plot(pippo[-303],type="l")
+  
+  table(pippo$nuovi_contagi) ## frequency table for new cases
+  
+  # utilizzando bar plot
 
-
-pippo <- subset(Covid.data, ISTAT_code == 21008, select = c("datum","nuovi_contagi"))
-
-View(pippo)
-plot(pippo, type= "p")
-# identify the outlier
-identify(pippo, n=2)  # observation n 303: outlier
-
-pippo[-c(301,303),] # outliers
-
-plot(pippo[-c(301,303)], type= "p")
-plot(pippo[-303],type="l")
-
-
-table(pippo$nuovi_contagi) ## frequency table for new cases
-
-# utilizzando bar plot
-
-grafico.pippo<-barplot(pippo$nuovi_contagi[-303], main= "Nuovi contagi giornalieri", xlab= "Giorno", ylab="Nuovi_casi", names.arg = pippo$datum, col="red") ## bar chart of the new cases for Bolzano
-
+  grafico.pippo<-barplot(pippo$nuovi_contagi[-303], main= "Nuovi contagi giornalieri", xlab= "Giorno", ylab="Nuovi_casi", names.arg = pippo$datum, col="red") ## bar chart of the new cases for Bolzano
+}
 # new.data.set Covid.data = without NA
 
 new.Covid.data<-subset(Covid.data,Covid.data$totals!="NA", select=c("datum","totals","nuovi_contagi"))
-str(new.Covid.data)
-View(new.Covid.data)
+#str(new.Covid.data)
+#View(new.Covid.data)
 
 # for loop
 
@@ -248,13 +226,13 @@ codice.istat <- sort(unique(Covid.data$ISTAT_code))
 
 comune<-21008
 
-  CairoPDF("test.pdf",width = 10, height = 14)
+CairoPDF("test.pdf",width = 10, height = 14)
 par(mfrow=c(2,1))
 
 for (comune in codice.istat){
  pippo <- subset(Covid.data,ISTAT_code==comune,select= c("datum","totals","nuovi_contagi"))
- plot(datum, # x variable
-      nuovi_contagi,  # y variable
+ plot(pippo$datum,          # x variable
+      pippo$nuovi_contagi,  # y variable
       col="red",            # line colour
       type= "l",            # line graph
       lty=1,                # line type
@@ -266,13 +244,13 @@ for (comune in codice.istat){
  
       title(main=paste("Nuovi contagi giornalieri",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n"),
       xlab ="datum",    # x-axis label
-      ylab ="nuovi_contagi", pos= 4)  # y-axis label
+      ylab ="nuovi_contagi")  # y-axis label
       
       axis.Date(1, at = seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),pos=0,
            labels= seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),
            format="%Y-%m", las = 0)
- plot(datum,
-      totals,
+ plot(pippo$datum,
+      pippo$totals,
       col="red",
       type="h",
       xaxt="n", 
