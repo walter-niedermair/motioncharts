@@ -222,7 +222,7 @@ View(new.Covid.data)
 # for loop
 
 Lingua<-"Deutsch"
-sheetsXLS <- c('Comuni', 'Com_AggrDimora', 'Com_AggrDimora_DC', 'Com_AggrASDimora', 'Com_AggrPAFDimora',"label")
+sheetsXLS <- c('Comuni', 'Com_AggrDimora', 'Com_AggrDimora_DC', 'Com_AggrASDimora', 'Com_AggrPAFDimora',"Label")
 
 #-- funzione per leggere i diversi sheets del file excel, selezionando la lingua 
 
@@ -252,14 +252,82 @@ codice.istat <- sort(unique(Covid.data$ISTAT_code))
 Label.long <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Label")
 View(Label.long)
 
+
+
 ## wide format using the reshape function
 
 Label.wide <-reshape(Label.long, idvar = "Sys_Lingua", timevar = "Label", direction = "wide")
 View(Label.wide)
+setDT(Label.wide)
+colnames(Label.wide)
+setnames(Label.wide,c("Valore.ydesc","Valore.xdesc","Valore.main.title","Valore.main.title2"),c("ydesc", "xdesc", "main.title",  "main.title2"))
+colnames(Label.wide)
+
+Label <- subset(Label.wide,Sys_Lingua==Lingua)
+View(Label)
+
+### prova 1
+
+CairoPDF("test.pdf",width = 10, height = 14)
+par(mfrow=c(2,1))
+
+for (comune in codice.istat){
+  pippo <- subset(Covid.data,ISTAT_code==comune,select= c("datum","totals","nuovi_contagi"))
+  plot(pippo$datum,          # x variable
+       pippo$nuovi_contagi,  # y variable
+       col="red",            # line colour
+       type= "l",            # line graph
+       lty=1,                # line type
+       lwd=1,                # line width,
+       xaxt="n",             # suppress x axis
+       ylim=range(pippo$nuovi_contagi), #c(min(pippo$nuovi_contagi),max(pippo$nuovi_contagi)) # values plotted on the y axis)  
+       # col.lab="black", cex.lab=1.75
+       frame.plot = FALSE,
+       xlab =Label[Label$Sys_Lingua==Lingua,"xdesc"],     # x-axis label
+       ylab =Label[Label$Sys_Lingua==Lingua,"ydesc"])
+  
+       title(main= Label[Label$Sys_Lingua==Lingua,"main.title"])
+       
+       axis.Date(1, at = seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),pos=0,
+                 labels= seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),
+                 format="%Y-%m", las = 0)
+       
+       plot(pippo$datum,
+            pippo$totals,
+            col="red",
+            type="h",
+            xaxt="n", 
+            ylim=range(pippo$totals),
+            frame.plot= FALSE,
+            xlab= Label[Label$Sys_Lingua==Lingua,"xdesc"],
+            ylab= Label[Label$Sys_Lingua==Lingua,"ydesc"])
+       
+       ##################################################################################
+       
+       # TITLE OF THE GRAPH
+       title(main=Label[Label$Sys_Lingua==Lingua,"main.title2"])
+               
+       axis.Date(1, at = seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),pos=0,
+                 labels= seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),
+                 format="%Y-%m", las = 0)
+       
+       # axis.Date(1, at=seq(min(pippo$datum), max(pippo$datum), by="months"), format="%m-%Y")
+}
+dev.off()
+       
+
+
+
+
 
 
 
 comune<-21008
+
+
+
+
+##
 
 if (Lingua=="Deutsch"){ ydesc <-"Neue_Positive"} else { ydesc <-"Nuovi_positivi"}
 if (Lingua=="Deutsch"){ xdesc <- "Datum"} else { xdesc <- "data"}
