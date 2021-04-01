@@ -302,5 +302,8 @@ dev.off()
 #            col="red",
 #            border =NA)
 
-## da chiedere a Walter come mai si sovrascrivono i nomi delle etichette degli assi x e y con i nomi delle variabili rappresentate
+##  DOMANDE PER WALTER
 
+## 1) i nomi delle etichette si sovrascrivono con i nomi delle variabili, se questi differiscono
+## 2) secondo grafico:"h" rappresenta linee verticali orizzontali.
+##    se modifico con barplot o histogram, non mi appare più grafico nel file pdf. E' dovuto alle specifiche nella funzione CairoPDF?
