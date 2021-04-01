@@ -222,7 +222,7 @@ View(new.Covid.data)
 # for loop
 
 Lingua<-"Deutsch"
-sheetsXLS <- c('Comuni', 'Com_AggrDimora', 'Com_AggrDimora_DC', 'Com_AggrASDimora', 'Com_AggrPAFDimora')
+sheetsXLS <- c('Comuni', 'Com_AggrDimora', 'Com_AggrDimora_DC', 'Com_AggrASDimora', 'Com_AggrPAFDimora',"label")
 
 #-- funzione per leggere i diversi sheets del file excel, selezionando la lingua 
 
@@ -242,19 +242,32 @@ pluto <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Co
 #[11] "Com_AggrDimora_DC"     "Com_AggrLLavoro"       "Com_AggrLLavoro_DC"    "Com_AggrDimoraDis"     "Com_AggrCP"           
 #[16] "Com_AggrAS"            "Com_AggrPAF" 
 
+
 pluto$Chiave <- as.numeric(pluto$Chiave)
 
 codice.istat <- sort(unique(Covid.data$ISTAT_code))
+
+## creare file excel (geo--comuni.xlsx, sheet =label) # long format 
+
+Label.long <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Label")
+View(Label.long)
+
+## wide format using the reshape function
+
+Label.wide <-reshape(Label.long, idvar = "Sys_Lingua", timevar = "Label", direction = "wide")
+View(Label.wide)
+
+
 
 comune<-21008
 
 if (Lingua=="Deutsch"){ ydesc <-"Neue_Positive"} else { ydesc <-"Nuovi_positivi"}
 if (Lingua=="Deutsch"){ xdesc <- "Datum"} else { xdesc <- "data"}
-if (Lingua=="Deutsch"){ main.title <-paste("Neue Tägliche Fallzahlen",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n")} else {
-  main.title <- paste("Nuovi contagi giornalieri",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n")
+if (Lingua=="Deutsch"){ main.title <-paste("Neue Tägliche Fallzahlen",pluto[pluto$Sys_Lingua==Lingua & pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n")} else {
+  main.title <- paste("Nuovi contagi giornalieri")
 }
-if (Lingua=="Deutsch"){ main.title2 <-paste("Gesamte Tägliche Fallzahlen",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n")} else {
-  main.title2 <- paste("Nuovi contagi giornalieri",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n")
+if (Lingua=="Deutsch"){ main.title2 <-paste("Gesamte Tägliche Fallzahlen",pluto[pluto$Sys_Lingua==Lingua & pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n")} else {
+  main.title2 <- paste("Totale contagi giornalieri")
 }
 
   CairoPDF("test.pdf",width = 10, height = 14)
@@ -275,8 +288,9 @@ for (comune in codice.istat){
       xlab = xdesc,    # x-axis label
       ylab = ydesc)
  
-      title(main= main.title)
-              #paste("Nuovi contagi giornalieri",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n"))
+      title(main= paste(main.title,pluto[pluto$Sys_Lingua==Lingua & pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n"))
+              
+      #paste("Nuovi contagi giornalieri",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n"))
       
       
       axis.Date(1, at = seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),pos=0,
@@ -296,8 +310,7 @@ for (comune in codice.istat){
 ##################################################################################
  
  # TITLE OF THE GRAPH
-  title(main= main.title2)
-          #paste("Totale contagi giornalieri",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n"))
+  title(main= paste(main.title2,pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n"))
       
   axis.Date(1, at = seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),pos=0,
             labels= seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),
