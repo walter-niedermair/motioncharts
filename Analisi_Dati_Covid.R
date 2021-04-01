@@ -248,13 +248,22 @@ codice.istat <- sort(unique(Covid.data$ISTAT_code))
 
 comune<-21008
 
+if (Lingua=="Deutsch"){ ydesc <-"Neue_Positive"} else { ydesc <-"Nuovi_positivi"}
+if (Lingua=="Deutsch"){ xdesc <- "Datum"} else { xdesc <- "data"}
+if (Lingua=="Deutsch"){ main.title <-paste("Neue Tägliche Fallzahlen",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n")} else {
+  main.title <- paste("Nuovi contagi giornalieri",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n")
+}
+if (Lingua=="Deutsch"){ main.title2 <-paste("Gesamte Tägliche Fallzahlen",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n")} else {
+  main.title2 <- paste("Nuovi contagi giornalieri",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n")
+}
+
   CairoPDF("test.pdf",width = 10, height = 14)
 par(mfrow=c(2,1))
 
 for (comune in codice.istat){
  pippo <- subset(Covid.data,ISTAT_code==comune,select= c("datum","totals","nuovi_contagi"))
- plot(datum, # x variable
-      nuovi_contagi,  # y variable
+ plot(pippo$datum, # x variable
+      pippo$nuovi_contagi,  # y variable
       col="red",            # line colour
       type= "l",            # line graph
       lty=1,                # line type
@@ -262,35 +271,40 @@ for (comune in codice.istat){
       xaxt="n",             # suppress x axis
       ylim=range(pippo$nuovi_contagi), #c(min(pippo$nuovi_contagi),max(pippo$nuovi_contagi)) # values plotted on the y axis)  
       # col.lab="black", cex.lab=1.75
-      frame.plot = FALSE)
+      frame.plot = FALSE,
+      xlab = xdesc,    # x-axis label
+      ylab = ydesc)
  
-      title(main=paste("Nuovi contagi giornalieri",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n"),
-      xlab ="datum",    # x-axis label
-      ylab ="nuovi_contagi", pos= 4)  # y-axis label
+      title(main= main.title)
+              #paste("Nuovi contagi giornalieri",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n"))
+      
       
       axis.Date(1, at = seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),pos=0,
            labels= seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),
            format="%Y-%m", las = 0)
- plot(datum,
-      totals,
+      
+ plot(pippo$datum,
+      pippo$totals,
       col="red",
       type="h",
       xaxt="n", 
       ylim=range(pippo$totals),
-      frame.plot= FALSE)
+      frame.plot= FALSE,
+      xlab= xdesc,
+      ylab= ydesc)
   
 ##################################################################################
-  # TITLE OF THE GRAPH
-  title(main=paste("Totale contagi giornalieri",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n"),
-        xlab="datum",
-        ylab="totals") # totals
-        # col.lab="grey", cex.lab=1
-        
+ 
+ # TITLE OF THE GRAPH
+  title(main= main.title2)
+          #paste("Totale contagi giornalieri",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n"))
+      
   axis.Date(1, at = seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),pos=0,
             labels= seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),
             format="%Y-%m", las = 0)
+
   # axis.Date(1, at=seq(min(pippo$datum), max(pippo$datum), by="months"), format="%m-%Y")
-  }
+}
 dev.off()
 
 
@@ -302,8 +316,4 @@ dev.off()
 #            col="red",
 #            border =NA)
 
-##  DOMANDE PER WALTER
 
-## 1) i nomi delle etichette si sovrascrivono con i nomi delle variabili, se questi differiscono
-## 2) secondo grafico:"h" rappresenta linee verticali orizzontali.
-##    se modifico con barplot o histogram, non mi appare più grafico nel file pdf. E' dovuto alle specifiche nella funzione CairoPDF?
