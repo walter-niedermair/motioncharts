@@ -1,16 +1,12 @@
 #############################################################
+
 ## zoo and xts - na.locf
 # https://campus.datacamp.com/courses/manipulating-time-series-data-with-xts-and-zoo-in-r/merging-and-modifying-time-series?ex=6
 #
 ## imputeTS - na.mean
 # https://cran.r-project.org/web/packages/imputeTS/imputeTS.pdf
 # https://stackoverflow.com/questions/9322773/how-to-replace-na-with-mean-by-group-subset
-#
-#############################################################
 
-getwd()
-DIR<-getwd()
-directorydati<-paste(DIR,"d",sep="/")
 
 #############################################################
 # packages and libraries
@@ -23,37 +19,51 @@ if (!require("Cairo"))      install.packages("Cairo")      ; library (Cairo)
 if (!require("zoo"))        install.packages("zoo")        ; library (zoo)
 if (!require("xts"))        install.packages("xts")        ; library (xts)
 if (!require("imputeTS"))   install.packages("imputeTS")   ; library (imputeTS)
+if (!require("rvest"))      install.packages("rvest")      ; library (rvest)
+
+
 
 #############################################################
-## define directories
+# define directories
 #############################################################
+
 getwd()
 DIR<-getwd()
 directorydati<-paste(DIR,"d",sep="/")
 
 #############################################################
-# read and/or define functions
+
+ # IMPORTING THE DATA
+
+ # 1)dati Covid giornalieri Protezione Civile - Daten zum täglichen Covidfällen Zivilschutz Südtiroler Landesverwaltung
+ # 2)dati Covid giornalieri Provincia di Bolzano  - Daten zum täglichen Covidfällen auf Gemeindebene
+
 #############################################################
 
-impute.mean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
+
+Quelle.dati.PC<- "http://www.provinz.bz.it/sicherheit-zivilschutz/zivilschutz/aktuelle-daten-zum-coronavirus.asp"
+
+Quelle.dati.BZ<- "https://github.com/abaumg/covid19-bz-scraper/blob/master/data/covid19_bz_municipalities.csv"
+  
+webpage.dati.BZ<-read_html(Quelle.dati.BZ)
+
 
 #############################################################
-# Read data
+
+# ANALISI DATI PROTEZIONE CIVILE - ANALYSE DATEN DER ZIVILSCHUTZ
+
 #############################################################
-
-getwd()
-DIR<-getwd()
-directorydati<-paste(DIR,"d",sep="/") 
-
-# file Covid Protezione Civile
 
 dati.PC<-read.csv(file=paste(DIR,"d","Corona.Data.Detail.csv",sep="/"),header=TRUE, sep=";")
-
-str(dati.PC) # struttura data.frame
-
-#View(table(dati.PC$istat)) # Frequenze per codice istat
-
+str(dati.PC) 
 unique(substr(dati.PC$istat,1,2))
+
+#############################################################
+
+# ESTRAZIONE DATI COMUNALI PROVINCIA DI BOLZANO PER CODICE ISTAT 
+# DATENEXTRAKTION NACH ISTAT CODE DER GEMEINDEN DER PROVINZ BOZEN
+
+#############################################################
 
 new.dati.PC <- subset(dati.PC,substr(dati.PC$istat,1,2)==21,select=c("istat","datum","positiv"))
 colnames(new.dati.PC)
@@ -61,170 +71,127 @@ colnames(new.dati.PC)
 unique(new.dati.PC$istat)
 
 new.dati.PC$datum<-as.Date(new.dati.PC$datum)
+new.dati.PC$positiv<-as.numeric(new.dati.PC$positiv)
 str(new.dati.PC)
-
-null.data<-subset(new.dati.PC,new.dati.PC$positiv=="null")## recurrent pattern: 2021-02-10 & 2021-02-11
-View(null.data)
-
-new.dati.PC$positiv<-as.numeric(new.dati.PC$positiv) 
 
 plot(new.dati.PC$datum,new.dati.PC$positiv)
 
-# Aldein - 21001
-
-Aldein<-subset(new.dati.PC,new.dati.PC$istat==21001)
-View(Aldein)
-str(Aldein)
-Aldein$datum<-as.Date(Aldein$datum)
-Aldein$positiv<-as.numeric(Aldein$positiv)
-
 
 #############################################################
-# soluzione 1 - data.table con funzione definita sopra "impute.mean" 
-# questa funzione mette il overall mean al posto del valore mancante
-setDT(new.dati.PC)
-new.dati.PC[, positiv := impute.mean(positiv), by = "istat"]
+
+# DATI PROTEZIONE CIVILE CON VALORI MANCANTI  
+# ZIVILSCHUTZ DATEN MIT FEHLENDEN INFORMATIONEN
+
 #############################################################
-# soluzione 2 - data.table con funzione "na_interpolation" dal pacchetto imputeTS 
-# questa funzione fa una interpolazione "lineare" o altra per i valori missing
+
+null.data<-subset(new.dati.PC,is.na(new.dati.PC$positiv))
+
+#############################################################
+
+### INTERPOLAZIONE LINEARE DEI DATI MANCANTI /
+### LINEARE INTERPOLATION DER FEHLENDEN DATEN
+
+#############################################################
+
 setDT(new.dati.PC)
 new.dati.PC[, positiv := na_interpolation(positiv, option = "linear"), by = "istat"]
+
+#############################################################
+
+# ANALISI DATI COMUNALI BOLZANO/ 
+# ANALYSE DER DATEN ZUM TÄGLICHEN COVIDFÄLLE AUF GEMEINDEBENE
+
 #############################################################
 
 
-
-
-
-
-
-which(is.na(Aldein$positiv))
-which(Aldein$datum=="2021-02-09"|Aldein$datum=="2021-02-12") ## to check the position of obs corresponding to the dates 
-
-# metodo poco efficiente e mi trasforma tutti i valori della colonna in decimale
-Aldein$positiv[is.na(Aldein$positiv)]<-round(mean(c(Aldein[Aldein$datum=="2021-02-09"|Aldein$datum=="2021-02-12","positiv"])),digits=0)
-
-View(Aldein)
-
-# trasformare Aldein in ts 
-
-Aldein<-subset(new.dati.PC,new.dati.PC$istat==21001)
-View(Aldein)
-
-Aldein.ts<-xts(Aldein$positiv,order.by=Aldein$datum)
-View(Aldein.ts)
-Aldein.ts<-zoo(Aldein.ts)
-
-## definizione di una funzione che dipende dalla data e dal comune
-
-codice<-new.dati.PC$ISTAT_code
-data<- c("2021-02-10","2021-02-11")
-data<-as.Date(data)
-View(data)
-
-myfunction<-function(codice,data){
-  for (i in codice )
-  prova<-subset(new.dati.PC,new.dati.PC$ISTAT_code==codice)
-  if(any(prova$datum==data)){prova$totals<- round(mean(prova$totals[data+1],prova$totals[data-1], digits=0))
-  }
-  }
-
 dati.Comuni.BZ<-read.csv(file =paste(directorydati,"covid19_bz_municipalities.csv", sep="/"),header=TRUE, sep=",")
-
 str(dati.Comuni.BZ)
-
-#View(dati.Comuni.BZ)
 
 unique(dati.Comuni.BZ$ISTAT_code)
 
 dati.Comuni.BZ$ISTAT_code<-as.numeric(dati.Comuni.BZ$ISTAT_code)
-
-#dati.Comuni.BZ$datum<-as.Date(dati.Comuni.BZ$datum,format= "%m/%d/%y") # produce NAs as a result
-
-
 dati.Comuni.BZ$datum <- as.Date(dati.Comuni.BZ$datum)
 
-substr(dati.Comuni.BZ$ISTAT_code,1,2)## primi due caratteri 
+############################################################
+
+# ESTRAZIONE DATI COMUNALI PROVINCIA DI BOLZANO PER CODICE ISTAT
+# DATENEXTRAKTION NACH ISTAT CODE DER GEMEINDEN DER PROVINZ BOZEN
+
+############################################################
 
 new.dati.Comuni.BZ <- subset(dati.Comuni.BZ,substr(dati.Comuni.BZ$ISTAT_code,1,2)==21, select=c("ISTAT_code","datum","totals"))
-
-View(new.dati.Comuni.BZ)
-
+new.dati.Comuni.BZ <- subset(new.dati.Comuni.BZ, datum< as.Date("2020-12-18"))
 str(new.dati.Comuni.BZ)
+
 new.dati.Comuni.BZ$datum<-as.Date(new.dati.Comuni.BZ$datum)
-
-
-colnames(new.dati.Comuni.BZ)
-colnames(new.dati.PC)
 
 setnames(new.dati.PC,c("istat","positiv"),c("ISTAT_code","totals"))
 colnames(new.dati.PC)
+colnames(new.dati.Comuni.BZ)
 
-new.dati.Comuni.BZ <- subset(new.dati.Comuni.BZ, datum< as.Date("2020-12-18"))
+############################################################
 
-View(new.dati.Comuni.BZ)
+# CREAZIONE NUOVO DATA.FRAME  COVID.DATA
+# ERSCHAFFUNG DES NEUEN DATA.FRAME COVID.DATA
 
+##########################################################
 
 Covid.data <- rbind(new.dati.Comuni.BZ,new.dati.PC)
-View(Covid.data)
-
-
-# structure
 
 str(Covid.data) 
-
-Covid.data$ISTAT_code<-as.numeric(Covid.data$ISTAT_code) # Format change: character > numeric
-
+Covid.data$ISTAT_code<-as.numeric(Covid.data$ISTAT_code) 
 setDT(Covid.data)
 
+##########################################################
 
-# Nuova Colonna con Lag 
+# AGGIUNTA NUOVE COLONNE LAG.VALUE E NUOVI CONTAGI
+# ZUSATZ DER NEUEN SPALTEN LAG.VALUE UND NEUE COVIDFÄLLE
 
-library(data.table)
-
-setDT(Covid.data)
-Covid.data
+##########################################################
 
 Covid.data[, lag.value:=c(NA, totals[-.N]), by="ISTAT_code"]
-View(Covid.data)
-
 Covid.data$lag.value[is.na(Covid.data$lag.value)]<-0
-
 Covid.data$nuovi_contagi <- Covid.data$totals- Covid.data$lag.value
 
-View(Covid.data)
-
-
-pippo <- subset(Covid.data, ISTAT_code == 21008, select = c("datum","nuovi_contagi"))
-
-View(pippo)
-plot(pippo, type= "p")
-# identify the outlier
-identify(pippo, n=2)  # observation n 303: outlier
-
-pippo[-c(301,303),] # outliers
-
-plot(pippo[-c(301,303)], type= "p")
-plot(pippo[-303],type="l")
-
-
-table(pippo$nuovi_contagi) ## frequency table for new cases
-
-# utilizzando bar plot
-
-grafico.pippo<-barplot(pippo$nuovi_contagi[-303], main= "Nuovi contagi giornalieri", xlab= "Giorno", ylab="Nuovi_casi", names.arg = pippo$datum, col="red") ## bar chart of the new cases for Bolzano
+##########################################################
 
 # new.data.set Covid.data = without NA
 
+##########################################################
 new.Covid.data<-subset(Covid.data,Covid.data$totals!="NA", select=c("datum","totals","nuovi_contagi"))
 str(new.Covid.data)
-View(new.Covid.data)
 
-# for loop
+##########################################################
+
+# ESTRAZIONE DATI, RIMOZIONE OUTLIERS E RAPPRESENTAZIONE GRAFICA 
+# CONTAGI PER COMUNE
+# DATENEXTRAKTION, AUSREISSERENTFERNUNG, GRAFISCHE DARSTELLUNG 
+# DER INFEKTIONEN NACH GEMEINDEN
+
+##########################################################
+
+comune <-21008 # scegliere valore codice istat / wählen einen Wert der Istat Code
+
+pippo <- subset(Covid.data, ISTAT_code == comune, select = c("datum","nuovi_contagi"))
+plot(pippo, type= "p")
+
+pippo.outliers <- identify(pippo, n=2)  
+pippo[-c(pippo.outliers),]
+
+plot(pippo[-c(pippo.outliers)], type= "p")
+plot(pippo[-c(pippo.outliers)],type="l")
+
+grafico.pippo<-barplot(pippo$nuovi_contagi[-c(pippo.outliers)], main= "Nuovi contagi giornalieri", xlab= "Giorno", ylab="Nuovi_casi", names.arg = pippo$datum, col="red") 
+
+#################################################################
+
+# FOR LOOP PER SELEZIONARE I DATI NELLA STESSA LINGUA
+# FOR LOOP UM DIE DATEN IN DERSELBEN SPRACHE EINZULESEN
+
+#################################################################
 
 Lingua<-"Deutsch"
 sheetsXLS <- c('Comuni', 'Com_AggrDimora', 'Com_AggrDimora_DC', 'Com_AggrASDimora', 'Com_AggrPAFDimora',"Label")
-
-#-- funzione per leggere i diversi sheets del file excel, selezionando la lingua 
 
 for(i in sheetsXLS){
   pluto <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = i)
@@ -234,167 +201,65 @@ for(i in sheetsXLS){
   rm(pluto)
 }
 
-
 pluto <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Comuni")
-#> colnames(pluto)
-#[1] "Chiave"                "Sys_Lingua"            "DescrizioneDimora_DC"  "DescrizioneLLavoro_DC" "DescrizioneDimora"    
-#[6] "DescrizioneLLavoro"    "Descr_shortDimora"     "Descr_shortLLavoro"    "DescrizioneDimoraDis"  "Com_AggrDimora"       
-#[11] "Com_AggrDimora_DC"     "Com_AggrLLavoro"       "Com_AggrLLavoro_DC"    "Com_AggrDimoraDis"     "Com_AggrCP"           
-#[16] "Com_AggrAS"            "Com_AggrPAF" 
-
-
 pluto$Chiave <- as.numeric(pluto$Chiave)
+
+Label.long <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Label")
+setDT(Label.long)
+
+Label.wide <-melt(Label.long, id.vars = "Chiave",variable.name = "Sys_Lingua", value.name = "Descrizione")
+setDT(Label.wide)
+
+Label <- subset(Label.wide,Sys_Lingua==Lingua, select=c("Chiave","Descrizione"))
+
+#################################################################
+
+# CREAZIONE GRAFICO
+# ERSTELLUNG DER GRAPHIK
+
+#################################################################
 
 codice.istat <- sort(unique(Covid.data$ISTAT_code))
 
-## creare file excel (geo--comuni.xlsx, sheet =label) # long format 
-
-Label.long <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Label")
-View(Label.long)
-
-
-
-## wide format using the reshape function
-
-Label.wide <-reshape(Label.long, idvar = "Sys_Lingua", timevar = "Label", direction = "wide")
-View(Label.wide)
-setDT(Label.wide)
-colnames(Label.wide)
-setnames(Label.wide,c("Valore.ydesc","Valore.xdesc","Valore.main.title","Valore.main.title2"),c("ydesc", "xdesc", "main.title",  "main.title2"))
-colnames(Label.wide)
-
-Label <- subset(Label.wide,Sys_Lingua==Lingua)
-View(Label)
-
-### prova 1
 
 CairoPDF("test.pdf",width = 10, height = 14)
 par(mfrow=c(2,1))
 
 for (comune in codice.istat){
   pippo <- subset(Covid.data,ISTAT_code==comune,select= c("datum","totals","nuovi_contagi"))
-  plot(pippo$datum,          # x variable
-       pippo$nuovi_contagi,  # y variable
-       col="red",            # line colour
-       type= "l",            # line graph
-       lty=1,                # line type
-       lwd=1,                # line width,
-       xaxt="n",             # suppress x axis
-       ylim=range(pippo$nuovi_contagi), #c(min(pippo$nuovi_contagi),max(pippo$nuovi_contagi)) # values plotted on the y axis)  
-       # col.lab="black", cex.lab=1.75
+  plot(pippo$datum,          
+       pippo$nuovi_contagi,  
+       col="red",            
+       type= "l",            
+       lty=1,               
+       lwd=1,                
+       xaxt="n",             
+       ylim=range(pippo$nuovi_contagi), 
        frame.plot = FALSE,
-       xlab =Label[Label$Sys_Lingua==Lingua,"xdesc"],     # x-axis label
-       ylab =Label[Label$Sys_Lingua==Lingua,"ydesc"])
-  
-       title(main= Label[Label$Sys_Lingua==Lingua,"main.title"])
+       xlab =Label[Chiave=="xdesc"]$Descrizione,     
+       ylab =Label[Chiave=="ydesc"]$Descrizione
+       )
+  title(main=c(Label[Chiave=="main.title"]$Descrizione, pluto[pluto$Sys_Lingua==Lingua& pluto$Chiave==comune,c("Descr_shortDimora")]))
+       axis.Date(1, at = seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),pos=0,
+       labels= seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),
+                 format="%Y-%m", las = 0)
+       
+  plot(pippo$datum,
+       pippo$totals,
+       col="red",
+       type="h",
+       xaxt="n", 
+       ylim=range(pippo$totals),
+       frame.plot= FALSE,
+       xlab= Label[Chiave=="xdesc"]$Descrizione,
+       ylab= Label[Chiave=="ydesc"]$Descrizione)
+       
+       title(main=c(Label[Chiave=="main.title2"]$Descrizione, pluto[pluto$Sys_Lingua==Lingua& pluto$Chiave==comune,c("Descr_shortDimora")]))
        
        axis.Date(1, at = seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),pos=0,
                  labels= seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),
                  format="%Y-%m", las = 0)
-       
-       plot(pippo$datum,
-            pippo$totals,
-            col="red",
-            type="h",
-            xaxt="n", 
-            ylim=range(pippo$totals),
-            frame.plot= FALSE,
-            xlab= Label[Label$Sys_Lingua==Lingua,"xdesc"],
-            ylab= Label[Label$Sys_Lingua==Lingua,"ydesc"])
-       
-       ##################################################################################
-       
-       # TITLE OF THE GRAPH
-       title(main=Label[Label$Sys_Lingua==Lingua,"main.title2"])
-               
-       axis.Date(1, at = seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),pos=0,
-                 labels= seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),
-                 format="%Y-%m", las = 0)
-       
-       # axis.Date(1, at=seq(min(pippo$datum), max(pippo$datum), by="months"), format="%m-%Y")
 }
 dev.off()
        
-
-
-
-
-
-
-
-comune<-21008
-
-
-
-
-##
-
-if (Lingua=="Deutsch"){ ydesc <-"Neue_Positive"} else { ydesc <-"Nuovi_positivi"}
-if (Lingua=="Deutsch"){ xdesc <- "Datum"} else { xdesc <- "data"}
-if (Lingua=="Deutsch"){ main.title <-paste("Neue Tägliche Fallzahlen",pluto[pluto$Sys_Lingua==Lingua & pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n")} else {
-  main.title <- paste("Nuovi contagi giornalieri")
-}
-if (Lingua=="Deutsch"){ main.title2 <-paste("Gesamte Tägliche Fallzahlen",pluto[pluto$Sys_Lingua==Lingua & pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n")} else {
-  main.title2 <- paste("Totale contagi giornalieri")
-}
-
-  CairoPDF("test.pdf",width = 10, height = 14)
-par(mfrow=c(2,1))
-
-for (comune in codice.istat){
- pippo <- subset(Covid.data,ISTAT_code==comune,select= c("datum","totals","nuovi_contagi"))
- plot(pippo$datum, # x variable
-      pippo$nuovi_contagi,  # y variable
-      col="red",            # line colour
-      type= "l",            # line graph
-      lty=1,                # line type
-      lwd=1,                # line width,
-      xaxt="n",             # suppress x axis
-      ylim=range(pippo$nuovi_contagi), #c(min(pippo$nuovi_contagi),max(pippo$nuovi_contagi)) # values plotted on the y axis)  
-      # col.lab="black", cex.lab=1.75
-      frame.plot = FALSE,
-      xlab = xdesc,    # x-axis label
-      ylab = ydesc)
- 
-      title(main= paste(main.title,pluto[pluto$Sys_Lingua==Lingua & pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n"))
-              
-      #paste("Nuovi contagi giornalieri",pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n"))
-      
-      
-      axis.Date(1, at = seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),pos=0,
-           labels= seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),
-           format="%Y-%m", las = 0)
-      
- plot(pippo$datum,
-      pippo$totals,
-      col="red",
-      type="h",
-      xaxt="n", 
-      ylim=range(pippo$totals),
-      frame.plot= FALSE,
-      xlab= xdesc,
-      ylab= ydesc)
-  
-##################################################################################
- 
- # TITLE OF THE GRAPH
-  title(main= paste(main.title2,pluto[pluto$Sys_Lingua==Lingua&pluto$Chiave==comune,c("Descr_shortDimora")],sep = "\n"))
-      
-  axis.Date(1, at = seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),pos=0,
-            labels= seq(pippo$datum[1], pippo$datum[length(pippo$datum)], by="month"),
-            format="%Y-%m", las = 0)
-
-  # axis.Date(1, at=seq(min(pippo$datum), max(pippo$datum), by="months"), format="%m-%Y")
-}
-dev.off()
-
-
-#     barplot(Covid.data[Covid.data$ISTAT_code==comune]$nuovi_contagi, 
-#            main= paste("Nuovi contagi giornalieri",comune,sep = "\n"), 
-#            xlab= "Giorno", 
-#            ylab="Nuovi_casi", 
-#            names.arg = Covid.data[Covid.data$ISTAT_code==comune]$datum, 
-#            col="red",
-#            border =NA)
-
 
