@@ -282,22 +282,24 @@ codice.stazione<-Stazioni.meteo$SCODE
 sensoren <- c("LT","N","SD") #3 Sensoren
 stazione <- Wetter.station$Wetter_station #43 Wetterstationen
 
-for (stazione in codice.stazione){
+for (meteostation in stazione){
   
   for (sensore_code in sensoren) {
-    pippo <- jsonlite::fromJSON(sprintf("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=%s&sensor_code=%s&date_from=20200101&date_to=20210407",stazione,sensore_code))
+    #pippo <- jsonlite::fromJSON(sprintf("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=%s&sensor_code=%s&date_from=20200101&date_to=20210407",stazione,sensore_code))
+    download.file(sprintf("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=%s&sensor_code=%s&date_from=20200101&date_to=20210407",meteostation,sensore_code),"data.json")
+    pippo <- jsonlite::fromJSON("data.json")
     setDT(pippo)# DATE VALUE
     pippo$DATE <- as.Date(pippo$DATE)
-    if (sensore_code == "LT") pippo[,list(LT=mean(VALUE)),by=c("DATE")] ; pluto <- pippo
-    if (sensore_code == "N" ) pippo[,list( N=sum(VALUE)) ,by=c("DATE")] ; pluto <- merge(pluto,pippo,by="DATE")
-    if (sensore_code == "SD") pippo[,list(SD=sum(VALUE)) ,by=c("DATE")] ; pluto <- merge(pluto,pippo,by="DATE")
+    if (sensore_code == "LT") { pippo <- pippo[,list(LT=mean(VALUE)),by=c("DATE")] ; pluto <- pippo }
+    if (sensore_code == "N" ) { pippo <- pippo[,list( N=sum(VALUE)) ,by=c("DATE")] ; pluto <- merge(pluto,pippo,by="DATE") } 
+    if (sensore_code == "SD") { pippo <- pippo[,list(SD=sum(VALUE)) ,by=c("DATE")] ; pluto <- merge(pluto,pippo,by="DATE") }
     # data.table mit diesen Spalen  DATE | LT | N | SD
   } 
   
   # hinzufügen der Spalte "stazione"
-  pluto$stazione <-  stazione
+  pluto$stazione <-  meteostation
   # data.table mit diesen Spalen  DATE | LT | N | SD | stazione
-  if (stazione == codice.stazione[1]) minnie <- pluto else minnie <- rbind(minnie,pluto)
+  if (meteostation == stazione[1]) meteodaten <- pluto else meteodaten <- rbind(meteodaten,pluto)
 
 }
 
