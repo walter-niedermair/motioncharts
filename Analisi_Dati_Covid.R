@@ -263,18 +263,77 @@ for (comune in codice.istat){
 }
 dev.off()
        
+## Chiave e Wetter station
 
 Wetter.station<-read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Wetter_station")
 View(Wetter.station)
 
 # Wetter stationen
 
-Stazioni.meteo<-fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/stations")
+Stazioni.meteo<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/stations")
+Stazioni.meteo<-Stazioni.meteo$features$properties
+str(Stazioni.meteo)
 View(Stazioni.meteo)
-# Error in fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/stations") : 
-#unexpected character 'h'
 
-# File Jason Wetterstation Bozen ID_station "83200MS" Informationen über die Lufttemperatur vom 1 Januar 2020
+codice.stazione<-Stazioni.meteo$SCODE
 
-btc<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=83200MS&output_format=JSON&sensor_code=LT&N&date_from=20200101")
-View(btc)
+# Import der Sensoren [LT,N,SD] nach Station_code Zeitintervall: 01-01-2020 bis heute # Frag Walter ob ich ein Doppel egal einsetzen soll
+
+for (stazione in codice.stazione){
+  LT<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=stazione&sensor_code=LT&date_from=20200101&date_to=20210407")
+  N<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=stazione&sensor_code=N&date_from=20200101&date_to=20210407")
+  SD<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=stazione&sensor_code=LD&date_from=20200101&date_to=20210407")
+   }
+
+# Wetterstation Bozen Wetterstation Bozen ID_station "83200MS"
+
+# stazione<-"83200MS"
+for (stazione in codice.stazione){
+  LT<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=stazione&sensor_code=LT&date_from=20200101&date_to=20210407")
+  N<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=stazione&sensor_code=N&date_from=20200101&date_to=20210407")
+  SD<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=stazione&sensor_code=LD&date_from=20200101&date_to=20210407")
+}
+
+
+
+BZ.LT<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=83200MS&sensor_code=LT&date_from=20200101&date_to=20210407")
+BZ.N<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=83200MS&sensor_code=N&date_from=20200101&date_to=20210407")
+BZ.SD<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=83200MS&sensor_code=SD&date_from=20200101&date_to=20210407")
+
+setDT(BZ.LT)
+setDT(BZ.N)
+setDT(BZ.SD)
+
+
+View(BZ.LT)
+View(BZ.N)
+View(BZ.SD)
+
+
+Sensoren.BZ<-merge(BZ.LT,BZ.SD, by="DATE") 
+View(Sensoren.BZ)
+  
+# Error in merge.data.table(BZ.LT, BZ.N, BZ.SD, by = "DATE") : 
+# by.x` and `by.y` must be of same length.
+
+# 
+ID_Station<-Wetter.station$Wetter_station
+
+for (Gemeinde in ID_Station){
+  Wetter.station<-read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Wetter_station")
+  Wetter.station<-subset(Wetter.station,Wetter.station$Wetter_station==Gemeinde)
+ # Wetter.station$LF<-
+ # Wetter.station$N<-
+ # Wetter.station$SD
+}
+
+
+# FRAGEN AN WALTER
+
+# 1) Wie wird besser die Uhr bestimmt?
+# 2) soll ich ein doppeles Gleichheitszeichnen verwenden?
+
+
+
+
+
