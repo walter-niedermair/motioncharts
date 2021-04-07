@@ -20,6 +20,7 @@ if (!require("zoo"))        install.packages("zoo")        ; library (zoo)
 if (!require("xts"))        install.packages("xts")        ; library (xts)
 if (!require("imputeTS"))   install.packages("imputeTS")   ; library (imputeTS)
 if (!require("rvest"))      install.packages("rvest")      ; library (rvest)
+if (!require("jsonlite"))   install.packages("jsonlite")   ; library (jsonlite)
 
 
 
@@ -263,3 +264,17 @@ for (comune in codice.istat){
 dev.off()
        
 
+Wetter.station<-read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Wetter_station")
+View(Wetter.station)
+
+# Wetter stationen
+
+Stazioni.meteo<-fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/stations")
+View(Stazioni.meteo)
+# Error in fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/stations") : 
+#unexpected character 'h'
+
+# File Jason Wetterstation Bozen ID_station "83200MS" Informationen über die Lufttemperatur vom 1 Januar 2020
+
+btc<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=83200MS&output_format=JSON&sensor_code=LT&N&date_from=20200101")
+View(btc)
