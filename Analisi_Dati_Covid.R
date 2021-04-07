@@ -279,11 +279,27 @@ codice.stazione<-Stazioni.meteo$SCODE
 
 # Import der Sensoren [LT,N,SD] nach Station_code Zeitintervall: 01-01-2020 bis heute # Frag Walter ob ich ein Doppel egal einsetzen soll
 
+sensoren <- c("LT","N","SD") #3 Sensoren
+stazione <- Wetter.station$Wetter_station #43 Wetterstationen
+
 for (stazione in codice.stazione){
-  LT<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=stazione&sensor_code=LT&date_from=20200101&date_to=20210407")
-  N<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=stazione&sensor_code=N&date_from=20200101&date_to=20210407")
-  SD<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=stazione&sensor_code=LD&date_from=20200101&date_to=20210407")
-   }
+  
+  for (sensore_code in sensoren) {
+    pippo <- jsonlite::fromJSON(sprintf("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=%s&sensor_code=%s&date_from=20200101&date_to=20210407",stazione,sensore_code))
+    setDT(pippo)# DATE VALUE
+    pippo$DATE <- as.Date(pippo$DATE)
+    if (sensore_code == "LT") pippo[,list(LT=mean(VALUE)),by=c("DATE")] ; pluto <- pippo
+    if (sensore_code == "N" ) pippo[,list( N=sum(VALUE)) ,by=c("DATE")] ; pluto <- merge(pluto,pippo,by="DATE")
+    if (sensore_code == "SD") pippo[,list(SD=sum(VALUE)) ,by=c("DATE")] ; pluto <- merge(pluto,pippo,by="DATE")
+    # data.table mit diesen Spalen  DATE | LT | N | SD
+  } 
+  
+  # hinzufügen der Spalte "stazione"
+  pluto$stazione <-  stazione
+  # data.table mit diesen Spalen  DATE | LT | N | SD | stazione
+  if (stazione == codice.stazione[1]) minnie <- pluto else minnie <- rbind(minnie,pluto)
+
+}
 
 # Wetterstation Bozen Wetterstation Bozen ID_station "83200MS"
 
