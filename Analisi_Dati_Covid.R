@@ -282,43 +282,50 @@ Wetter.station<-read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), shee
 sensoren <- c("LT","N","SD") #3 Sensoren
 stazione <-unique(Wetter.station$Wetter_station) #43 Wetterstationen
 
-for (meteostation in stazione){
-  
-  for (sensore_code in sensoren) {
+fileToSave <- paste(directorydati,"meteodaten2.rds",sep="/")
+
+if (!file.exists(fileToSave)) {
     
-    pippo <- jsonlite::fromJSON(sprintf("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=%s&sensor_code=%s&date_from=20200101&date_to=20210407",meteostation,sensore_code))
-    #download.file(sprintf("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=%s&sensor_code=%s&date_from=20200101&date_to=20210407",meteostation,sensore_code),"data.json")
-    #pippo<-jsonlite::fromJSON("data.json")
-    setDT(pippo)# DATE VALUE
-    pippo$DATE <- as.Date(pippo$DATE)
-    if (NROW(pippo)!=0) {
-      if (sensore_code == "LT") {pippo <- pippo[,list(LT=mean(VALUE)),by=c("DATE")] ; pluto <- pippo }
-      if (sensore_code == "N" ) {pippo <- pippo[,list( N=sum(VALUE)) ,by=c("DATE")] ; pluto <- merge(pluto,pippo,by="DATE")}
-      if (sensore_code == "SD") {pippo <- pippo[,list(SD=sum(VALUE)) ,by=c("DATE")] ; pluto <- merge(pluto,pippo,by="DATE")}
-    } else { # if (NROW(pippo) == 0)
-      if (sensore_code == "LT") {pippo <- setNames(data.frame(matrix(ncol = 2, nrow = 0)), c("DATE", "LT")) ; pluto <- pippo}
-      if (sensore_code == "N" ) {pippo <- setNames(data.frame(matrix(ncol = 1, nrow = 0)), c("N"))  ; pluto <- cbind(pluto,pippo)}
-      if (sensore_code == "SD") {pippo <- setNames(data.frame(matrix(ncol = 1, nrow = 0)), c("SD")) ; pluto <- cbind(pluto,pippo)}
-    }
-      # data.table mit diesen Spalen  DATE | LT | N | SD
-  } 
+  for (meteostation in stazione){
+    
+    for (sensore_code in sensoren) {
+      
+      pippo <- jsonlite::fromJSON(sprintf("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=%s&sensor_code=%s&date_from=20200101&date_to=20210407",meteostation,sensore_code))
+      #download.file(sprintf("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=%s&sensor_code=%s&date_from=20200101&date_to=20210407",meteostation,sensore_code),"data.json")
+      #pippo<-jsonlite::fromJSON("data.json")
+      setDT(pippo)# DATE VALUE
+      pippo$DATE <- as.Date(pippo$DATE)
+      if (NROW(pippo)!=0) {
+        if (sensore_code == "LT") {pippo <- pippo[,list(LT=mean(VALUE)),by=c("DATE")] ; pluto <- pippo }
+        if (sensore_code == "N" ) {pippo <- pippo[,list( N=sum(VALUE)) ,by=c("DATE")] ; pluto <- merge(pluto,pippo,by="DATE")}
+        if (sensore_code == "SD") {pippo <- pippo[,list(SD=sum(VALUE)) ,by=c("DATE")] ; pluto <- merge(pluto,pippo,by="DATE")}
+      } else { # if (NROW(pippo) == 0)
+        if (sensore_code == "LT") {pippo <- setNames(data.frame(matrix(ncol = 2, nrow = 0)), c("DATE", "LT")) ; pluto <- pippo}
+        if (sensore_code == "N" ) {pippo <- setNames(data.frame(matrix(ncol = 1, nrow = 0)), c("N"))  ; pluto <- cbind(pluto,pippo)}
+        if (sensore_code == "SD") {pippo <- setNames(data.frame(matrix(ncol = 1, nrow = 0)), c("SD")) ; pluto <- cbind(pluto,pippo)}
+      }
+        # data.table mit diesen Spalen  DATE | LT | N | SD
+    } 
+    
+    # hinzufügen der Spalte "stazione"
+    pluto$stazione <-  meteostation
+    # data.table mit diesen Spalten  DATE | LT | N | SD | stazione
+    if (meteostation == stazione[1]) meteodaten <- pluto else meteodaten <- rbind(meteodaten,pluto)
+    #meteodaten<-write.xlsx(meteodaten,(paste(directorydati, 'meteodaten.xlsx',sep="/")))
+    # il file deve essere salvato dopo che tutto il loop é finito, vuo dire dopo la parentesi "}"
+  }
   
-  # hinzufügen der Spalte "stazione"
-  pluto$stazione <-  meteostation
-  # data.table mit diesen Spalten  DATE | LT | N | SD | stazione
-  if (meteostation == stazione[1]) meteodaten <- pluto else meteodaten <- rbind(meteodaten,pluto)
-  #meteodaten<-write.xlsx(meteodaten,(paste(directorydati, 'meteodaten.xlsx',sep="/")))
-  # il file deve essere salvato dopo che tutto il loop é finito, vuo dire dopo la parentesi "}"
+  # esistono due possibilità per salvare oggetti R (RDS o rData)
+  # vedi: http://www.sthda.com/english/wiki/saving-data-into-r-data-format-rds-and-rdata
+  # (1) Save an object to a file (rds)
+  saveRDS(meteodaten, file = fileToSave)
+
+  # (2) Save an object to a file (rData)
+  #save(meteodaten, file = paste(directorydati,"meteodaten.rData",sep="/"))
+} else {
+  meteodaten <- readRDS(file = fileToSave)
 }
 
-# esistono due possibilità per salvare oggetti R (RDS o rData)
-# vedi: http://www.sthda.com/english/wiki/saving-data-into-r-data-format-rds-and-rdata
-# (1) Save an object to a file (rds)
-saveRDS(meteodaten, file = paste(directorydati,"meteodaten.rds",sep="/"))
-
-# (2) Save an object to a file (rData)
-#save(meteodaten, file = paste(directorydati,"meteodaten.rData",sep="/"))
-        
 
 # funziona seguendo i passaggi in sequenza
 
