@@ -263,24 +263,43 @@ for (comune in codice.istat){
 }
 dev.off()
        
-## Chiave e Wetter station
+####################################################################
 
+# IMPORT DATI STAZIONI METEO PER COMUNE
+# IMPORT DATEN WETTER STATIONEN AUF GEMEINDE EBENE
+
+####################################################################
 Wetter.station<-read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Wetter_station")
-View(Wetter.station)
 
-# Wetter stationen
+####################################################################
+
+# DOWNLOAD DATI STAZIONI METEO
+# HERUNTERLADUNG DATEN DER WETTER STATIONEN 
+
+####################################################################
+
+Quelle.wetter.station<-"http://daten.buergernetz.bz.it/services/meteo/v1/stations"
 
 Stazioni.meteo<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/stations")
 Stazioni.meteo<-Stazioni.meteo$features$properties
 str(Stazioni.meteo)
-View(Stazioni.meteo)
-
 codice.stazione<-Stazioni.meteo$SCODE
 
-# Import der Sensoren [LT,N,SD] nach Station_code Zeitintervall: 01-01-2020 bis heute 
+####################################################################
 
-sensoren <- c("LT","N","SD") #3 Sensoren
-stazione <-unique(Wetter.station$Wetter_station) #43 Wetterstationen
+## DOWNLOAD METADATI SENSORI [LT,N,SD] PER ID_STAZIONE PERIODO DI OSSERVAZIONE: 01-01-2020 FINO AD OGGI 
+## IMPORT DER SENSOREN [LT,N,SD] NACH STATION_CODE ZEITINTERVAL: 01-01-2020 BIS HEUTE
+
+
+## LEGEND: 
+## LT = Temperatura dell'aria in °C / Lufttemperatur in °C
+## N  = Pioggia in mm /Niederschlag in mm
+## SD = tempo di soleggiamento in secondi / Sonnenscheindauer in Sekunden
+####################################################################
+
+
+sensoren <- c("LT","N","SD") 
+stazione <-unique(Wetter.station$Wetter_station) 
 
 fileToSave <- paste(directorydati,"meteodaten2.rds",sep="/")
 
@@ -291,7 +310,7 @@ if (!file.exists(fileToSave)) {
     for (sensore_code in sensoren) {
       
       pippo <- jsonlite::fromJSON(sprintf("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=%s&sensor_code=%s&date_from=20200101&date_to=20210408",meteostation,sensore_code))
-      setDT(pippo)# DATE VALUE
+      setDT(pippo)
       pippo$DATE <- as.Date(pippo$DATE)
       if (NROW(pippo)!=0) {
         if (sensore_code == "LT") {pippo <- pippo[,list(LT=mean(VALUE)),by=c("DATE")] ; pluto <- pippo }
@@ -302,35 +321,125 @@ if (!file.exists(fileToSave)) {
         if (sensore_code == "N" ) {pippo <- setNames(data.frame(matrix(ncol = 1, nrow = 0)), c("N"))  ; pluto <- cbind(pluto,pippo)}
         if (sensore_code == "SD") {pippo <- setNames(data.frame(matrix(ncol = 1, nrow = 0)), c("SD")) ; pluto <- cbind(pluto,pippo)}
       }
-      # data.table mit diesen Spalten  DATE | LT | N | SD
     } 
-    
-    # hinzufügen der Spalte "stazione"
+  }  
+}
     pluto$stazione <-  meteostation
-    # data.table mit diesen Spalten  DATE | LT | N | SD | stazione
     if (meteostation == stazione[1]) meteodaten <- pluto else meteodaten <- rbind(meteodaten,pluto)
     
-  }
-
-  # (1) Save meteodaten into directorydati,"meteodaten2.rds"
+####################################################################
   
-  saveRDS(meteodaten, file = fileToSave)
+##  SALVATAGGIO OUTPUT FOR LOOP "METEODATEN" NEL FILE "meteodaten2.rds"
+##  OUTPUTSPEICHERUNG DER SCHLEIFE "METEODATEN" IN DEM FILE "meteodaten2.rds"
+
+####################################################################
   
-  meteodaten.rds <- readRDS(fileToSave)
-  View(meteodaten.rds)
-  meteodaten.rds$SD<-floor(meteodaten.rds$SD/3600) # convert seconds into hours
+saveRDS(meteodaten, file = fileToSave)
   
-  # (2) Save an object to a file (rData)
-  #save(meteodaten, file = paste(directorydati,"meteodaten.rData",sep="/"))
-} else {
-  meteodaten <- readRDS(file = fileToSave)
-}
+####################################################################
+    
+# LETTURA FILE meteodaten2.rds   
+# FILE meteodaten2.rds EINLESEN 
+    
+####################################################################
+
+dati.meteo      <- readRDS(file = fileToSave)
+dati.meteo$SD   <- floor(dati.meteo$SD/3600) 
+dati.meteo$DATE <- as.Date(dati.meteo$DATE)
+
+####################################################################
+
+# DEFINIZIONE GIORNATA PIOVOSA
+# E'considerato giorno di pioggia, il giorno in cui il livello di precipitazione 
+# nell'arco di 24 ore è pari o maggiore a 0,1 mm (equivalente a 0,1 l/m²)
 
 
+# REGENTAG DEFINITION
+# Ein Regentag ist ein Tag mit einer 24-stündigen gemessenen Regenhöhe 
+# größer/gleich 0,1 mm (entspricht 0,1 l/m²)
+
+# CREAZIONE NUOVA COLONNA GIORNO DI PIOGGIA
+# DEFINITION EINER NEUEN SPALTE REGENTAG 
+
+####################################################################
+
+dati.meteo$Regentag <- 0
+dati.meteo$Regentag <- within(dati.meteo,Regentag[N>= 0.1]<-1)
+head(dati.meteo)
+
+plot(dati.meteo$DATE,dati.meteo$Regentag, type ="p")
+
+table(dati.meteo$Regentag)
+plot(table(dati.meteo$N))
+
+#################################################################
+
+# IMPORT FILE METEODATEN2.RDS
+# IMPORT FILE METEODATEN2.RDS
+
+#################################################################
+
+meteodaten2          <- readRDS(fileToSave)
+
+meteodaten2$Regentag <- 0
+meteodaten2          <- within(meteodaten2,Regentag[N>=0.1]<-1)
+
+str(meteodaten2)
+meteodaten2$SD       <- floor(meteodaten2$SD/3600)
+
+########################################################################
+
+# CREAZIONE UNICO DATASET DEI DATI NUOVI_CONTAGI E DATI.METEO PER COMUNE
+# DATASET ERSTELLUNG MIT NEUEN FAELLEN UND METEODATEN AUF GEMEINDEBENE
+
+########################################################################
+
+# PRIMO MERGE TRA METEODATEN.RDS E STAZIONI METEO
+# ERSTE VERKNÜPFUNG ZWISCHEN METEODATEN.RDS UND WETTER.STATION
+
+########################################################################
+
+colnames(meteodaten2)
+colnames(Wetter.station)
+
+Verknüpfung1 <-merge(Wetter.station,meteodaten2, by.x = "Wetter_station", by.y="stazione", allow.cartesian = TRUE)
+
+
+# setDT(Wetter.station)
+# setkey(Wetter.station,Wetter_station)
+
+
+########################################################################
+
+# SECONDO MERGE CON COVID.DATA
+# ZWEITE VERKNÜPFUNG MIT COVID.DATA
+
+########################################################################
+
+colnames(Verknüpfung1)
+colnames(Covid.data)
+
+str(Verknüpfung1)
+str(Covid.data)
+
+Covid.data$datum<-as.Date(Covid.data$datum)
+Verknüpfung1$DATE<-as.Date(Verknüpfung1$DATE)
+
+Covid.data$ISTAT_code<-as.numeric(Covid.data$ISTAT_code)
+Verknüpfung1$Chiave<-as.numeric(Verknüpfung1$Chiave)  
+
+Verknüpfung2 <- merge(Covid.data,Verknüpfung1,all.x=TRUE, by.x= "datum", by.y= "DATE",allow.cartesian=TRUE)
+
+
+####################################################################
+
+# ESEMPIO / BEISPIEL
+
+####################################################################
 
 
 meteostation<-"83200MS"
-sensoren <- c("LT","N","SD") #3 Sensoren
+sensoren <- c("LT","N","SD") 
 
 for( sensore_code in sensoren){
   
@@ -352,40 +461,59 @@ pluto$stazione <-  meteostation
 
 # data.table mit diesen Spalten  DATE | LT | N | SD | stazione
 
-if (meteostation == stazione[1]) meteodaten <- pluto else meteodaten <- rbind(meteodaten,pluto)
+if (meteostation == stazione[1]) meteodaten <- pluto else meteodaten <- rbind(meteodaten,pluto) # wenn die Wetter.station nicht der ersten Station gleich ist, eine Reiheverknüpfung gemacht wird
 
 saveRDS(meteodaten, file = fileToSave)
 
 my_data<-readRDS(fileToSave)
 
+
 # convert format from minutes to hours
 
 my_data$SD<-floor(my_data$SD/3600)
 
-View(my_data)
+
 str(my_data)
 
 my_data$DATE<-as.Date(my_data$DATE)
 
-# N = Niederschlag in mm
-# Regentag definition
-# Ein Regentag ist ein Tag mit einer 24-stündigen gemessenen Regenhöhe größer/gleich 0,1 mm (entspricht 0,1 l/m²)
 
-Regentagen<- subset(my_data,my_data$N >= 0.1)
-str(Regentagen)
-Regentagen$LT<-round(Regentagen$LT,digits=0)
+#########################################################################
+
+# CREAZIONE GRAFICO
+# ERSTELLUNG DER GRAPHIK
 
 
-# plot(my_data$DATE, my_data$SD, type="h")
+#########################################################################
+
+
+
 
 CairoPDF("meteodaten.pdf",width = 10, height = 14)
 par(mfrow=c(3,1))
 
+for (meteostation in stazione){
+  
+  for (sensore_code in sensoren) {
+    
+    pippo <- jsonlite::fromJSON(sprintf("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=%s&sensor_code=%s&date_from=20200101&date_to=20210408",meteostation,sensore_code))
+    setDT(pippo)# DATE VALUE
+    pippo$DATE <- as.Date(pippo$DATE)
+    if (NROW(pippo)!=0) {
+      if (sensore_code == "LT") {pippo <- pippo[,list(LT=mean(VALUE)),by=c("DATE")] ; pluto <- pippo }
+      if (sensore_code == "N" ) {pippo <- pippo[,list( N=sum(VALUE)) ,by=c("DATE")] ; pluto <- merge(pluto,pippo,by="DATE")}
+      if (sensore_code == "SD") {pippo <- pippo[,list(SD=sum(VALUE)) ,by=c("DATE")] ; pluto <- merge(pluto,pippo,by="DATE")}
+    } else { # if (NROW(pippo) == 0)
+      if (sensore_code == "LT") {pippo <- setNames(data.frame(matrix(ncol = 2, nrow = 0)), c("DATE", "LT")) ; pluto <- pippo}
+      if (sensore_code == "N" ) {pippo <- setNames(data.frame(matrix(ncol = 1, nrow = 0)), c("N"))  ; pluto <- cbind(pluto,pippo)}
+      if (sensore_code == "SD") {pippo <- setNames(data.frame(matrix(ncol = 1, nrow = 0)), c("SD")) ; pluto <- cbind(pluto,pippo)}
+    }
+    # data.table mit diesen Spalten  DATE | LT | N | SD
+  } 
 
+}
 
-
-
-
+dev.off()
 
 
 
@@ -461,5 +589,4 @@ BZ.SD<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/time
 setDT(BZ.LT)
 setDT(BZ.N)
 setDT(BZ.SD)
-
 
