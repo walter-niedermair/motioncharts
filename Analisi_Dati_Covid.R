@@ -314,7 +314,7 @@ for (meteostation in stazione){
 # esistono due possibilità per salvare oggetti R (RDS o rData)
 # vedi: http://www.sthda.com/english/wiki/saving-data-into-r-data-format-rds-and-rdata
 # (1) Save an object to a file (rds)
-saveRDS(meteodaten, file = paste(directorydati,"meteodaten2.rds",sep="/"))
+saveRDS(meteodaten, file = paste(directorydati,"meteodaten.rds",sep="/"))
 
 # (2) Save an object to a file (rData)
 #save(meteodaten, file = paste(directorydati,"meteodaten.rData",sep="/"))
