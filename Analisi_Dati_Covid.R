@@ -42,11 +42,11 @@ directorydati<-paste(DIR,"d",sep="/")
 #############################################################
 
 
-Quelle.dati.PC<- "http://www.provinz.bz.it/sicherheit-zivilschutz/zivilschutz/aktuelle-daten-zum-coronavirus.asp"
+Quelle.dati.PC  <- "http://www.provinz.bz.it/sicherheit-zivilschutz/zivilschutz/aktuelle-daten-zum-coronavirus.asp"
 
-Quelle.dati.BZ<- "https://github.com/abaumg/covid19-bz-scraper/blob/master/data/covid19_bz_municipalities.csv"
+Quelle.dati.BZ  <- "https://github.com/abaumg/covid19-bz-scraper/blob/master/data/covid19_bz_municipalities.csv"
   
-webpage.dati.BZ<-read_html(Quelle.dati.BZ)
+webpage.dati.BZ <- read_html(Quelle.dati.BZ)
 
 
 #############################################################
@@ -55,9 +55,10 @@ webpage.dati.BZ<-read_html(Quelle.dati.BZ)
 
 #############################################################
 
-dati.PC<-read.csv(file=paste(DIR,"d","Corona.Data.Detail.csv",sep="/"),header=TRUE, sep=";")
-str(dati.PC) 
-unique(substr(dati.PC$istat,1,2))
+dati.PC         <- read.csv(file=paste(DIR,"d","Corona.Data.Detail.csv",sep="/"),header=TRUE, sep=";")
+
+# str(dati.PC) 
+# unique(substr(dati.PC$istat,1,2))
 
 #############################################################
 
@@ -66,14 +67,15 @@ unique(substr(dati.PC$istat,1,2))
 
 #############################################################
 
-new.dati.PC <- subset(dati.PC,substr(dati.PC$istat,1,2)==21,select=c("istat","datum","positiv"))
-colnames(new.dati.PC)
+new.dati.PC    <- subset(dati.PC,substr(dati.PC$istat,1,2)==21,select=c("istat","datum","positiv"))
 
-unique(new.dati.PC$istat)
+# colnames(new.dati.PC)
+# unique(new.dati.PC$istat)
 
-new.dati.PC$datum<-as.Date(new.dati.PC$datum)
-new.dati.PC$positiv<-as.numeric(new.dati.PC$positiv)
-str(new.dati.PC)
+new.dati.PC$datum   <- as.Date(new.dati.PC$datum)
+new.dati.PC$positiv <- as.numeric(new.dati.PC$positiv)
+
+#  str(new.dati.PC)
 
 plot(new.dati.PC$datum,new.dati.PC$positiv)
 
@@ -105,13 +107,13 @@ new.dati.PC[, positiv := na_interpolation(positiv, option = "linear"), by = "ist
 #############################################################
 
 
-dati.Comuni.BZ<-read.csv(file =paste(directorydati,"covid19_bz_municipalities.csv", sep="/"),header=TRUE, sep=",")
-str(dati.Comuni.BZ)
+dati.Comuni.BZ            <- read.csv(file =paste(directorydati,"covid19_bz_municipalities.csv", sep="/"),header=TRUE, sep=",")
 
-unique(dati.Comuni.BZ$ISTAT_code)
+# str(dati.Comuni.BZ)
+# unique(dati.Comuni.BZ$ISTAT_code)
 
-dati.Comuni.BZ$ISTAT_code<-as.numeric(dati.Comuni.BZ$ISTAT_code)
-dati.Comuni.BZ$datum <- as.Date(dati.Comuni.BZ$datum)
+dati.Comuni.BZ$ISTAT_code <- as.numeric(dati.Comuni.BZ$ISTAT_code)
+dati.Comuni.BZ$datum      <- as.Date(dati.Comuni.BZ$datum)
 
 ############################################################
 
@@ -120,15 +122,16 @@ dati.Comuni.BZ$datum <- as.Date(dati.Comuni.BZ$datum)
 
 ############################################################
 
-new.dati.Comuni.BZ <- subset(dati.Comuni.BZ,substr(dati.Comuni.BZ$ISTAT_code,1,2)==21, select=c("ISTAT_code","datum","totals"))
-new.dati.Comuni.BZ <- subset(new.dati.Comuni.BZ, datum< as.Date("2020-12-18"))
-str(new.dati.Comuni.BZ)
+new.dati.Comuni.BZ        <- subset(dati.Comuni.BZ,substr(dati.Comuni.BZ$ISTAT_code,1,2)==21, select=c("ISTAT_code","datum","totals"))
+new.dati.Comuni.BZ        <- subset(new.dati.Comuni.BZ, datum< as.Date("2020-12-18"))
 
-new.dati.Comuni.BZ$datum<-as.Date(new.dati.Comuni.BZ$datum)
+# str(new.dati.Comuni.BZ)
 
+new.dati.Comuni.BZ$datum  <- as.Date(new.dati.Comuni.BZ$datum)
 setnames(new.dati.PC,c("istat","positiv"),c("ISTAT_code","totals"))
-colnames(new.dati.PC)
-colnames(new.dati.Comuni.BZ)
+
+# colnames(new.dati.PC)
+# colnames(new.dati.Comuni.BZ)
 
 ############################################################
 
@@ -137,10 +140,11 @@ colnames(new.dati.Comuni.BZ)
 
 ##########################################################
 
-Covid.data <- rbind(new.dati.Comuni.BZ,new.dati.PC)
+Covid.data            <- rbind(new.dati.Comuni.BZ,new.dati.PC)
 
-str(Covid.data) 
-Covid.data$ISTAT_code<-as.numeric(Covid.data$ISTAT_code) 
+# str(Covid.data) 
+
+Covid.data$ISTAT_code <- as.numeric(Covid.data$ISTAT_code) 
 setDT(Covid.data)
 
 ##########################################################
@@ -159,8 +163,10 @@ Covid.data$nuovi_contagi <- Covid.data$totals- Covid.data$lag.value
 # new.data.set Covid.data = without NA
 
 ##########################################################
+
 new.Covid.data<-subset(Covid.data,Covid.data$totals!="NA", select=c("datum","totals","nuovi_contagi"))
-str(new.Covid.data)
+
+# str(new.Covid.data)
 
 ##########################################################
 
@@ -171,18 +177,10 @@ str(new.Covid.data)
 
 ##########################################################
 
-comune <-21008 # scegliere valore codice istat / wählen einen Wert der Istat Code
-
-pippo <- subset(Covid.data, ISTAT_code == comune, select = c("datum","nuovi_contagi"))
+comune         <- 21008 # scegliere valore codice istat / wählen einen Wert der Istat Code
+pippo          <- subset(Covid.data, ISTAT_code == comune, select = c("datum","nuovi_contagi"))
 plot(pippo, type= "p")
-
-pippo.outliers <- identify(pippo, n=2)  
-pippo[-c(pippo.outliers),]
-
-plot(pippo[-c(pippo.outliers)], type= "p")
-plot(pippo[-c(pippo.outliers)],type="l")
-
-grafico.pippo<-barplot(pippo$nuovi_contagi[-c(pippo.outliers)], main= "Nuovi contagi giornalieri", xlab= "Giorno", ylab="Nuovi_casi", names.arg = pippo$datum, col="red") 
+grafico.pippo  <- barplot(pippo$nuovi_contagi, main= "Nuovi contagi giornalieri", xlab= "Giorno", ylab="Nuovi_casi", names.arg = pippo$datum, col="red") 
 
 #################################################################
 
@@ -191,8 +189,8 @@ grafico.pippo<-barplot(pippo$nuovi_contagi[-c(pippo.outliers)], main= "Nuovi con
 
 #################################################################
 
-Lingua<-"Deutsch"
-sheetsXLS <- c('Comuni', 'Com_AggrDimora', 'Com_AggrDimora_DC', 'Com_AggrASDimora', 'Com_AggrPAFDimora',"Label")
+Lingua    <- "Deutsch"
+sheetsXLS <- c('Comuni', 'Com_AggrDimora', 'Com_AggrDimora_DC', 'Com_AggrASDimora', 'Com_AggrPAFDimora')
 
 for(i in sheetsXLS){
   pluto <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = i)
@@ -202,16 +200,16 @@ for(i in sheetsXLS){
   rm(pluto)
 }
 
-pluto <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Comuni")
+pluto        <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Comuni")
 pluto$Chiave <- as.numeric(pluto$Chiave)
 
-Label.long <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Label")
+Label.long   <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Label")
 setDT(Label.long)
 
-Label.wide <-melt(Label.long, id.vars = "Chiave",variable.name = "Sys_Lingua", value.name = "Descrizione")
+Label.wide   <- melt(Label.long, id.vars = "Chiave",variable.name = "Sys_Lingua", value.name = "Descrizione")
 setDT(Label.wide)
 
-Label <- subset(Label.wide,Sys_Lingua==Lingua, select=c("Chiave","Descrizione"))
+Label        <- subset(Label.wide,Sys_Lingua==Lingua, select=c("Chiave","Descrizione"))
 
 #################################################################
 
@@ -269,7 +267,8 @@ dev.off()
 # IMPORT DATEN WETTER STATIONEN AUF GEMEINDE EBENE
 
 ####################################################################
-Wetter.station<-read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Wetter_station")
+
+Wetter.station        <-    read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Wetter_station")
 
 ####################################################################
 
@@ -278,12 +277,14 @@ Wetter.station<-read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), shee
 
 ####################################################################
 
-Quelle.wetter.station<-"http://daten.buergernetz.bz.it/services/meteo/v1/stations"
+Quelle.wetter.station  <-  "http://daten.buergernetz.bz.it/services/meteo/v1/stations"
 
 Stazioni.meteo<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/stations")
 Stazioni.meteo<-Stazioni.meteo$features$properties
-str(Stazioni.meteo)
-codice.stazione<-Stazioni.meteo$SCODE
+
+# str(Stazioni.meteo)
+
+codice.stazione        <- Stazioni.meteo$SCODE
 
 ####################################################################
 
@@ -298,10 +299,10 @@ codice.stazione<-Stazioni.meteo$SCODE
 ####################################################################
 
 
-sensoren <- c("LT","N","SD") 
-stazione <-unique(Wetter.station$Wetter_station) 
+sensoren   <- c("LT","N","SD") 
+stazione   <- unique(Wetter.station$Wetter_station) 
 
-fileToSave <- paste(directorydati,"meteodaten2.rds",sep="/")
+fileToSave <- paste(directorydati,"meteodaten1.rds",sep="/")
 
 if (!file.exists(fileToSave)) {
   
@@ -309,7 +310,7 @@ if (!file.exists(fileToSave)) {
     
     for (sensore_code in sensoren) {
       
-      pippo <- jsonlite::fromJSON(sprintf("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=%s&sensor_code=%s&date_from=20200101&date_to=20210408",meteostation,sensore_code))
+      pippo      <- jsonlite::fromJSON(sprintf("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=%s&sensor_code=%s&date_from=20200101&date_to=20210408",meteostation,sensore_code))
       setDT(pippo)
       pippo$DATE <- as.Date(pippo$DATE)
       if (NROW(pippo)!=0) {
@@ -322,10 +323,12 @@ if (!file.exists(fileToSave)) {
         if (sensore_code == "SD") {pippo <- setNames(data.frame(matrix(ncol = 1, nrow = 0)), c("SD")) ; pluto <- cbind(pluto,pippo)}
       }
     } 
+        pluto$stazione   <- meteostation
+        if (meteostation == stazione[1]) meteodaten <- pluto else meteodaten <- rbind(meteodaten,pluto) 
   }  
+  
 }
-    pluto$stazione <-  meteostation
-    if (meteostation == stazione[1]) meteodaten <- pluto else meteodaten <- rbind(meteodaten,pluto)
+    
     
 ####################################################################
   
@@ -365,7 +368,8 @@ dati.meteo$DATE <- as.Date(dati.meteo$DATE)
 
 dati.meteo$Regentag <- 0
 dati.meteo$Regentag <- within(dati.meteo,Regentag[N>= 0.1]<-1)
-head(dati.meteo)
+
+# head(dati.meteo)
 
 plot(dati.meteo$DATE,dati.meteo$Regentag, type ="p")
 
@@ -379,12 +383,9 @@ plot(table(dati.meteo$N))
 
 #################################################################
 
-meteodaten2          <- readRDS(fileToSave)
-
+meteodaten2          <- readRDS(paste(directorydati,"meteodaten2.rds",sep="/"))
 meteodaten2$Regentag <- 0
 meteodaten2          <- within(meteodaten2,Regentag[N>=0.1]<-1)
-
-str(meteodaten2)
 meteodaten2$SD       <- floor(meteodaten2$SD/3600)
 
 ########################################################################
@@ -399,11 +400,11 @@ meteodaten2$SD       <- floor(meteodaten2$SD/3600)
 
 ########################################################################
 
-colnames(meteodaten2)
-colnames(Wetter.station)
+# colnames(meteodaten2)
+# colnames(Wetter.station)
 
-Verknüpfung1 <-merge(Wetter.station,meteodaten2, by.x = "Wetter_station", by.y="stazione", allow.cartesian = TRUE)
-
+Verknüpfung1       <- merge(Wetter.station,meteodaten2, by.x = "Wetter_station", by.y="stazione", allow.cartesian = TRUE)
+setDT(Verknüpfung1)
 
 # setDT(Wetter.station)
 # setkey(Wetter.station,Wetter_station)
@@ -416,104 +417,40 @@ Verknüpfung1 <-merge(Wetter.station,meteodaten2, by.x = "Wetter_station", by.y=
 
 ########################################################################
 
-colnames(Verknüpfung1)
-colnames(Covid.data)
+# colnames(Verknüpfung1)
+# colnames(Covid.data)
 
-str(Verknüpfung1)
-str(Covid.data)
+# str(Verknüpfung1)
+# str(Covid.data)
 
-Covid.data$datum<-as.Date(Covid.data$datum)
-Verknüpfung1$DATE<-as.Date(Verknüpfung1$DATE)
+Covid.data$datum          <- as.Date(Covid.data$datum)
+Verknüpfung1$DATE         <- as.Date(Verknüpfung1$DATE)
 
-Covid.data$ISTAT_code<-as.numeric(Covid.data$ISTAT_code)
-Verknüpfung1$Chiave<-as.numeric(Verknüpfung1$Chiave)  
+Covid.data$ISTAT_code      <- as.numeric(Covid.data$ISTAT_code)
+Verknüpfung1$Chiave        <- as.numeric(Verknüpfung1$Chiave)  
 
-Verknüpfung2 <- merge(Covid.data,Verknüpfung1,all.x=TRUE, by.x= "datum", by.y= "DATE",allow.cartesian=TRUE)
-
-
-####################################################################
-
-# ESEMPIO / BEISPIEL
+Verknüpfung2               <- merge(Covid.data,Verknüpfung1,all.x=TRUE, by.x= "datum", by.y= "DATE",allow.cartesian=TRUE)
+setDT(Verknüpfung2)
 
 ####################################################################
 
+# ERSTELLUNG DER SPALTE KALENDARWOCHE
 
-meteostation<-"83200MS"
-sensoren <- c("LT","N","SD") 
+####################################################################
 
-for( sensore_code in sensoren){
-  
-pippo <- jsonlite::fromJSON(sprintf("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=%s&sensor_code=%s&date_from=20200101&date_to=20210408",meteostation,sensore_code))
-setDT(pippo)# DATE VALUE
-pippo$DATE <- as.Date(pippo$DATE)
+View(Verknüpfung2)
 
-if (NROW(pippo)!=0) {
-  if (sensore_code == "LT") {pippo <- pippo[,list(LT=mean(VALUE)),by=c("DATE")]            ; pluto <- pippo }
-  if (sensore_code == "N" ) {pippo <- pippo[,list( N=sum(VALUE)) ,by=c("DATE")]            ; pluto <- merge(pluto,pippo,by="DATE")}
-  if (sensore_code == "SD") {pippo <- pippo[,list(SD=floor(sum(VALUE)/3600)),by=c("DATE")] ; pluto <- merge(pluto,pippo,by="DATE")}
-} else { # if (NROW(pippo) == 0)
-  if (sensore_code == "LT") {pippo <- setNames(data.frame(matrix(ncol = 2, nrow = 0)), c("DATE", "LT")) ; pluto <- pippo}
-  if (sensore_code == "N" ) {pippo <- setNames(data.frame(matrix(ncol = 1, nrow = 0)), c("N"))  ; pluto <- cbind(pluto,pippo)}
-  if (sensore_code == "SD") {pippo <- setNames(data.frame(matrix(ncol = 1, nrow = 0)), c("SD")) ; pluto <- cbind(pluto,pippo)}
-}
-}
-pluto$stazione <-  meteostation
+# Verknüpfung2$Kalendarwoche        <- as.Date(cut(Verknüpfung2$datum, "week"))
 
-# data.table mit diesen Spalten  DATE | LT | N | SD | stazione
+# Verknüpfung2$Kalendarwoche_nummer <- as.numeric(Verknüpfung2$datum - Verknüpfung2$datum[1]) %/% 7
 
-if (meteostation == stazione[1]) meteodaten <- pluto else meteodaten <- rbind(meteodaten,pluto) # wenn die Wetter.station nicht der ersten Station gleich ist, eine Reiheverknüpfung gemacht wird
+# Verknüpfung2$Kalendarwoche        <- Verknüpfung2$datum[1] + 7 * Verknüpfung2$Kalendarwoche_nummer
 
-saveRDS(meteodaten, file = fileToSave)
+# Verknüpfung2$Wochennummer         <- as.numeric(Verknüpfung2$datum[1])
 
-my_data<-readRDS(fileToSave)
+Verknüpfung2$KW                     <- isoweek(Verknüpfung2$datum) ## nummer der Kalenderwoche nach 
+
+Verknüpfung2$KWJJ                   <- 
 
 
-# convert format from minutes to hours
-
-my_data$SD<-floor(my_data$SD/3600)
-
-
-str(my_data)
-
-my_data$DATE<-as.Date(my_data$DATE)
-
-
-#########################################################################
-
-# CREAZIONE GRAFICO
-# ERSTELLUNG DER GRAPHIK
-
-
-#########################################################################
-
-
-
-
-CairoPDF("meteodaten.pdf",width = 10, height = 14)
-par(mfrow=c(3,1))
-
-for (meteostation in stazione){
-  
-  for (sensore_code in sensoren) {
-    
-    pippo <- jsonlite::fromJSON(sprintf("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=%s&sensor_code=%s&date_from=20200101&date_to=20210408",meteostation,sensore_code))
-    setDT(pippo)# DATE VALUE
-    pippo$DATE <- as.Date(pippo$DATE)
-    if (NROW(pippo)!=0) {
-      if (sensore_code == "LT") {pippo <- pippo[,list(LT=mean(VALUE)),by=c("DATE")] ; pluto <- pippo }
-      if (sensore_code == "N" ) {pippo <- pippo[,list( N=sum(VALUE)) ,by=c("DATE")] ; pluto <- merge(pluto,pippo,by="DATE")}
-      if (sensore_code == "SD") {pippo <- pippo[,list(SD=sum(VALUE)) ,by=c("DATE")] ; pluto <- merge(pluto,pippo,by="DATE")}
-    } else { # if (NROW(pippo) == 0)
-      if (sensore_code == "LT") {pippo <- setNames(data.frame(matrix(ncol = 2, nrow = 0)), c("DATE", "LT")) ; pluto <- pippo}
-      if (sensore_code == "N" ) {pippo <- setNames(data.frame(matrix(ncol = 1, nrow = 0)), c("N"))  ; pluto <- cbind(pluto,pippo)}
-      if (sensore_code == "SD") {pippo <- setNames(data.frame(matrix(ncol = 1, nrow = 0)), c("SD")) ; pluto <- cbind(pluto,pippo)}
-    }
-    # data.table mit diesen Spalten  DATE | LT | N | SD
-  } 
-
-}
-
-dev.off()
-
-
-  
+new.data.set                        <- data.table[,list(nuovi_contagi=sum(nuovi_contagi),Regentag=sum(Regentag),LT=mean(LT)),by="JJKW"]
