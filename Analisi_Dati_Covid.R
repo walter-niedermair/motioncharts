@@ -67,7 +67,7 @@ dati.PC         <- read.csv(file=paste(DIR,"d","Corona.Data.Detail.csv",sep="/")
 
 #############################################################
 
-new.dati.PC    <- subset(dati.PC,substr(dati.PC$istat,1,2)==21,select=c("istat","datum","positiv"))
+new.dati.PC         <- subset(dati.PC,substr(dati.PC$istat,1,2)==21,select=c("istat","datum","positiv"))
 
 # colnames(new.dati.PC)
 # unique(new.dati.PC$istat)
@@ -164,7 +164,7 @@ Covid.data$nuovi_contagi <- Covid.data$totals- Covid.data$lag.value
 
 ##########################################################
 
-new.Covid.data<-subset(Covid.data,Covid.data$totals!="NA", select=c("datum","totals","nuovi_contagi"))
+new.Covid.data          <- subset(Covid.data,Covid.data$totals!="NA", select=c("datum","totals","nuovi_contagi"))
 
 # str(new.Covid.data)
 
@@ -177,10 +177,10 @@ new.Covid.data<-subset(Covid.data,Covid.data$totals!="NA", select=c("datum","tot
 
 ##########################################################
 
-comune         <- 21008 # scegliere valore codice istat / wählen einen Wert der Istat Code
-pippo          <- subset(Covid.data, ISTAT_code == comune, select = c("datum","nuovi_contagi"))
+comune                 <- 21008 # scegliere valore codice istat / wählen einen Wert der Istat Code
+pippo                  <- subset(Covid.data, ISTAT_code == comune, select = c("datum","nuovi_contagi"))
 plot(pippo, type= "p")
-grafico.pippo  <- barplot(pippo$nuovi_contagi, main= "Nuovi contagi giornalieri", xlab= "Giorno", ylab="Nuovi_casi", names.arg = pippo$datum, col="red") 
+grafico.pippo          <- barplot(pippo$nuovi_contagi, main= "Nuovi contagi giornalieri", xlab= "Giorno", ylab="Nuovi_casi", names.arg = pippo$datum, col="red") 
 
 #################################################################
 
@@ -189,27 +189,27 @@ grafico.pippo  <- barplot(pippo$nuovi_contagi, main= "Nuovi contagi giornalieri"
 
 #################################################################
 
-Lingua    <- "Deutsch"
-sheetsXLS <- c('Comuni', 'Com_AggrDimora', 'Com_AggrDimora_DC', 'Com_AggrASDimora', 'Com_AggrPAFDimora')
+Lingua                <- "Deutsch"
+sheetsXLS             <- c('Comuni', 'Com_AggrDimora', 'Com_AggrDimora_DC', 'Com_AggrASDimora', 'Com_AggrPAFDimora')
 
 for(i in sheetsXLS){
-  pluto <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = i)
-  pluto <- subset(pluto,Sys_Lingua==Lingua)
-  pluto <- pluto[!names(pluto)=="Sys_Lingua"]
+  pluto               <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = i)
+  pluto               <- subset(pluto,Sys_Lingua==Lingua)
+  pluto               <- pluto[!names(pluto)=="Sys_Lingua"]
   assign(paste0('GEM_', i), pluto)
   rm(pluto)
 }
 
-pluto        <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Comuni")
-pluto$Chiave <- as.numeric(pluto$Chiave)
+pluto                 <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Comuni")
+pluto$Chiave          <- as.numeric(pluto$Chiave)
 
-Label.long   <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Label")
+Label.long            <- read.xlsx(paste(directorydati, 'geo--comuni.xlsx',sep="/"), sheet = "Label")
 setDT(Label.long)
 
-Label.wide   <- melt(Label.long, id.vars = "Chiave",variable.name = "Sys_Lingua", value.name = "Descrizione")
+Label.wide            <- melt(Label.long, id.vars = "Chiave",variable.name = "Sys_Lingua", value.name = "Descrizione")
 setDT(Label.wide)
 
-Label        <- subset(Label.wide,Sys_Lingua==Lingua, select=c("Chiave","Descrizione"))
+Label                 <- subset(Label.wide,Sys_Lingua==Lingua, select=c("Chiave","Descrizione"))
 
 #################################################################
 
@@ -218,7 +218,7 @@ Label        <- subset(Label.wide,Sys_Lingua==Lingua, select=c("Chiave","Descriz
 
 #################################################################
 
-codice.istat <- sort(unique(Covid.data$ISTAT_code))
+codice.istat          <- sort(unique(Covid.data$ISTAT_code))
 
 
 CairoPDF("test.pdf",width = 10, height = 14)
@@ -279,12 +279,13 @@ Wetter.station        <-    read.xlsx(paste(directorydati, 'geo--comuni.xlsx',se
 
 Quelle.wetter.station  <-  "http://daten.buergernetz.bz.it/services/meteo/v1/stations"
 
-Stazioni.meteo<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/stations")
-Stazioni.meteo<-Stazioni.meteo$features$properties
+#### CHECK DATEN ALLER WETTER_STATIONEN AUS DER WEBSEITE http://daten.buergernetz.bz.it
 
+
+# Stazioni.meteo<-jsonlite::fromJSON("http://daten.buergernetz.bz.it/services/meteo/v1/stations")
+# Stazioni.meteo<-Stazioni.meteo$features$properties
 # str(Stazioni.meteo)
-
-codice.stazione        <- Stazioni.meteo$SCODE
+# codice.stazione        <- Stazioni.meteo$SCODE
 
 ####################################################################
 
@@ -307,9 +308,10 @@ fileToSave <- paste(directorydati,"meteodaten1.rds",sep="/")
 if (!file.exists(fileToSave)) {
   
   for (meteostation in stazione){
+    print(sprintf("momentan mache ich %s/%s Wetterstation: %s" ,match(meteostation,stazione),NROW(stazione),meteostation)) # print nummer der Wetter Station, die ausgedr
     
     for (sensore_code in sensoren) {
-      
+      print(sprintf("momentan macht R %s", sensore_code))
       pippo      <- jsonlite::fromJSON(sprintf("http://daten.buergernetz.bz.it/services/meteo/v1/timeseries?station_code=%s&sensor_code=%s&date_from=20200101&date_to=20210408",meteostation,sensore_code))
       setDT(pippo)
       pippo$DATE <- as.Date(pippo$DATE)
@@ -323,6 +325,7 @@ if (!file.exists(fileToSave)) {
         if (sensore_code == "SD") {pippo <- setNames(data.frame(matrix(ncol = 1, nrow = 0)), c("SD")) ; pluto <- cbind(pluto,pippo)}
       }
     } 
+    
         pluto$stazione   <- meteostation
         if (meteostation == stazione[1]) meteodaten <- pluto else meteodaten <- rbind(meteodaten,pluto) 
   }  
@@ -346,7 +349,7 @@ saveRDS(meteodaten, file = fileToSave)
     
 ####################################################################
 
-dati.meteo      <- readRDS(file = fileToSave)
+dati.meteo      <- readRDS(file = paste(directorydati,"meteodaten2.rds",sep="/"))
 dati.meteo$SD   <- floor(dati.meteo$SD/3600) 
 dati.meteo$DATE <- as.Date(dati.meteo$DATE)
 
@@ -367,7 +370,7 @@ dati.meteo$DATE <- as.Date(dati.meteo$DATE)
 ####################################################################
 
 dati.meteo$Regentag <- 0
-dati.meteo$Regentag <- within(dati.meteo,Regentag[N>= 0.1]<-1)
+dati.meteo <- within(dati.meteo,Regentag[N>= 0.1]<-1)
 
 # head(dati.meteo)
 
@@ -388,23 +391,22 @@ meteodaten2$Regentag <- 0
 meteodaten2          <- within(meteodaten2,Regentag[N>=0.1]<-1)
 meteodaten2$SD       <- floor(meteodaten2$SD/3600)
 
-########################################################################
+##################################################################
 
 # CREAZIONE UNICO DATASET DEI DATI NUOVI_CONTAGI E DATI.METEO PER COMUNE
 # DATASET ERSTELLUNG MIT NEUEN FAELLEN UND METEODATEN AUF GEMEINDEBENE
 
-########################################################################
+##################################################################
 
 # PRIMO MERGE TRA METEODATEN.RDS E STAZIONI METEO
 # ERSTE VERKNÜPFUNG ZWISCHEN METEODATEN.RDS UND WETTER.STATION
 
-########################################################################
-
+##################################################################
 # colnames(meteodaten2)
 # colnames(Wetter.station)
 
-Verknüpfung1       <- merge(Wetter.station,meteodaten2, by.x = "Wetter_station", by.y="stazione", allow.cartesian = TRUE)
-setDT(Verknüpfung1)
+Verknuepfung1       <- merge(Wetter.station,meteodaten2, by.x = "Wetter_station", by.y="stazione", allow.cartesian = TRUE)
+setDT(Verknuepfung1)
 
 # setDT(Wetter.station)
 # setkey(Wetter.station,Wetter_station)
@@ -423,14 +425,15 @@ setDT(Verknüpfung1)
 # str(Verknüpfung1)
 # str(Covid.data)
 
-Covid.data$datum          <- as.Date(Covid.data$datum)
-Verknüpfung1$DATE         <- as.Date(Verknüpfung1$DATE)
+Covid.data$datum            <- as.Date(Covid.data$datum)
+Verknuepfung1$DATE          <- as.Date(Verknuepfung1$DATE)
 
-Covid.data$ISTAT_code      <- as.numeric(Covid.data$ISTAT_code)
-Verknüpfung1$Chiave        <- as.numeric(Verknüpfung1$Chiave)  
+Covid.data$ISTAT_code       <- as.numeric(Covid.data$ISTAT_code)
+Verknuepfung1$Chiave        <- as.numeric(Verknuepfung1$Chiave)  
 
-Verknüpfung2               <- merge(Covid.data,Verknüpfung1,all.x=TRUE, by.x= "datum", by.y= "DATE",allow.cartesian=TRUE)
-setDT(Verknüpfung2)
+
+Verknuepfung2               <- merge(Covid.data,Verknuepfung1,all.x=TRUE, by.x= c("datum","ISTAT_code"), by.y= c("DATE","Chiave"))
+setDT(Verknuepfung2)
 
 ####################################################################
 
@@ -438,19 +441,46 @@ setDT(Verknüpfung2)
 
 ####################################################################
 
-View(Verknüpfung2)
+Verknuepfung2$KW                    <- isoweek(Verknuepfung2$datum) ## nummer der Kalenderwoche nach 
 
-# Verknüpfung2$Kalendarwoche        <- as.Date(cut(Verknüpfung2$datum, "week"))
+Verknuepfung2$JJ                    <- year(Verknuepfung2$datum)
 
-# Verknüpfung2$Kalendarwoche_nummer <- as.numeric(Verknüpfung2$datum - Verknüpfung2$datum[1]) %/% 7
-
-# Verknüpfung2$Kalendarwoche        <- Verknüpfung2$datum[1] + 7 * Verknüpfung2$Kalendarwoche_nummer
-
-# Verknüpfung2$Wochennummer         <- as.numeric(Verknüpfung2$datum[1])
-
-Verknüpfung2$KW                     <- isoweek(Verknüpfung2$datum) ## nummer der Kalenderwoche nach 
-
-Verknüpfung2$KWJJ                   <- 
+Verknuepfung2$KW2                   <- round(difftime(Verknuepfung2$datum, as.Date("2020-03-18"), units = "weeks"))
 
 
-new.data.set                        <- data.table[,list(nuovi_contagi=sum(nuovi_contagi),Regentag=sum(Regentag),LT=mean(LT)),by="JJKW"]
+Verknuepfung3                       <- Verknuepfung2[,list(nuovi_contagi=sum(nuovi_contagi),Regentag=sum(Regentag), LT=mean(LT),SD=mean(SD)),by=c("KW2","ISTAT_code","DescrizioneDimora_DC","Com_AggrPAF")]
+setDT(Verknuepfung3)
+
+
+model.no_LAG                        <- lm(nuovi_contagi~ Regentag, data=Verknuepfung3)
+summary(model.no_LAG)
+
+
+#####################################################################################
+
+# CREAZIONE DELLA COLONNA REGENTAG1 E MODELLO CON LAG 1 (SETTIMANA PRECEDENTE)
+# ERSTELLUNG DER SPALTE REGENTAG1 UND MODEL MIT LAG 1 WOCHE VOR
+
+#####################################################################################
+
+Verknuepfung3[,Regentag.lag1:=c(NA, Regentag[-.N]), by="KW2"]
+Verknuepfung3$Regentag.lag1 [is.na(Verknuepfung3$Regentag.lag1)] <- 0
+Verknuepfung3$Regentag1                                          <- Verknuepfung3$Regentag - Verknuepfung3$Regentag.lag1
+
+
+model.lag1                                                       <- lm(nuovi_contagi~ Regentag+Regentag1 ,data=Verknuepfung3)
+summary(model.lag1)
+
+#####################################################################################
+
+# CREAZIONE DELLA COLONNA REGENTAG2 E MODELLO CON LAG 2 (SETTIMANE PRECEDENTI)
+# ERSTELLUNG DER SPALTE REGENTAG2 UND MODEL MIT LAG 2 WOCHEN VOR
+
+#####################################################################################
+
+Verknuepfung3[,Regentag.lag2 :=c(NA,Regentag1[-.N]),by="KW2"]
+Verknuepfung3$Regentag.lag2 [is.na(Verknuepfung3$Regentag.lag2)] <- 0
+Verknuepfung3$Regentag2                                          <- Verknuepfung3$Regentag1 - Verknuepfung3$Regentag.lag2
+
+model.lag2                                                       <- lm(nuovi_contagi ~ Regentag + Regentag2 ,data=Verknuepfung3)
+summary(model.lag2)
