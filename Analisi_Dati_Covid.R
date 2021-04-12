@@ -303,7 +303,7 @@ Quelle.wetter.station  <-  "http://daten.buergernetz.bz.it/services/meteo/v1/sta
 sensoren   <- c("LT","N","SD") 
 stazione   <- unique(Wetter.station$Wetter_station) 
 
-fileToSave <- paste(directorydati,"meteodaten1.rds",sep="/")
+fileToSave <- paste(directorydati,"meteodaten2.rds",sep="/")
 
 if (!file.exists(fileToSave)) {
   
@@ -463,12 +463,12 @@ summary(model.no_LAG)
 
 #####################################################################################
 
-Verknuepfung3[,Regentag.lag1:=c(NA, Regentag[-.N]), by="KW2"]
-Verknuepfung3$Regentag.lag1 [is.na(Verknuepfung3$Regentag.lag1)] <- 0
-Verknuepfung3$Regentag1                                          <- Verknuepfung3$Regentag - Verknuepfung3$Regentag.lag1
+Verknuepfung3 <- within(Verknuepfung3,Regentag[is.na(Regentag)] <- 0)
 
+Verknuepfung3[,Regentag.lag1:=c(NA, Regentag[-.N]), by=c("ISTAT_code")]
+Verknuepfung3$Regentag.lag1[is.na(Verknuepfung3$Regentag.lag1)] <- 0
 
-model.lag1                                                       <- lm(nuovi_contagi~ Regentag+Regentag1 ,data=Verknuepfung3)
+model.lag1 <- lm(nuovi_contagi~ Regentag+Regentag.lag1 ,data=Verknuepfung3)
 summary(model.lag1)
 
 #####################################################################################
@@ -478,9 +478,8 @@ summary(model.lag1)
 
 #####################################################################################
 
-Verknuepfung3[,Regentag.lag2 :=c(NA,Regentag1[-.N]),by="KW2"]
+Verknuepfung3[,Regentag.lag2 :=c(NA,Regentag.lag1[-.N]),by="ISTAT_code"]
 Verknuepfung3$Regentag.lag2 [is.na(Verknuepfung3$Regentag.lag2)] <- 0
-Verknuepfung3$Regentag2                                          <- Verknuepfung3$Regentag1 - Verknuepfung3$Regentag.lag2
 
-model.lag2                                                       <- lm(nuovi_contagi ~ Regentag + Regentag2 ,data=Verknuepfung3)
+model.lag2 <- lm(nuovi_contagi ~ Regentag + Regentag.lag1 + Regentag.lag2 ,data=Verknuepfung3)
 summary(model.lag2)
