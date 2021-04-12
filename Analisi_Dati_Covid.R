@@ -326,7 +326,9 @@ if (!file.exists(fileToSave)) {
   meteodaten <- readRDS(file = fileToSave)
 }
 
-
+# Definitzion Regentag = Niederschlag >= 0.1
+meteodaten$Regentag <- 0
+meteodaten <- within(meteodaten,Regentag[N>=0.1] <- 1)
 
 
 meteostation<-"83200MS"
