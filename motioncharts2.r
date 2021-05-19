@@ -2,9 +2,16 @@ if (!require("openxlsx"))   install.packages("openxlsx")   ; library (openxlsx)
 if (!require("data.table")) install.packages("data.table") ; library (data.table)
 if (!require("stringr"))    install.packages("stringr")    ; library (stringr)
 
+#-- funzione da usare
+substrRight <- function(x, n){
+  substr(x, nchar(x)-n+1, nchar(x))
+}
+
 #-- selezionare la Lingua di esecuzione dello script
 
-Lingua <- "Deutsch" # Italiano
+Lingua <- "Italiano" # Italiano
+
+fullyear <- 2020
 
 #-- definisco le directory 
 
@@ -65,7 +72,7 @@ setnames(GEM,"short.y","com_aggr_as")
 
 
 #-- tolta la chiave "021", cambio formato da string a numeric
-GEM$gem <- as.integer(substr(GEM$Chiave,4,6)) 
+GEM$gem <- as.integer(substrRight(GEM$Chiave, 3))
 GEM <- GEM[order(GEM$short),]
 
 #-- preparo per l'export del dominio geo (gemeinde)
@@ -149,6 +156,12 @@ astat[,sp_pc := round(spese_com/pop)]
 setnames(occdis,"jj"  ,"time")
 setnames(astat ,"year","time")
 astat <- subset(astat,select = c("gem","time","pop","pcs","ggperm","en_pc","sp_pc","mig","presenze","popvar","punti_vendita"))
+
+#-- aggiungo il valore dell'ultimo anno che da ASTAT non esiste ancora
+new <- astat[time==fullyear-1]
+new$time <- fullyear
+astat <- rbind(astat[time!=fullyear],new)
+
 ddf <- merge(astat,occdis,by=c("gem","time"),all.x = T)
 ddf <- ddf[complete.cases(ddf), ]
 
