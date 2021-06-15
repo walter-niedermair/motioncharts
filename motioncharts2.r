@@ -9,7 +9,7 @@ substrRight <- function(x, n){
 
 #-- selezionare la Lingua di esecuzione dello script
 
-Lingua <- "Deutsch" # Italiano
+Lingua <- "Italiano" # Italiano
 
 fullyear <- 2020
 
@@ -49,7 +49,7 @@ CreaShort <- function(nomedf = "df", colnamein  = "Descrizione", colnameout = "s
   if (substr(nomedf,1,12) != "GEM_Comuni") df <- df[get(colnames(df)[1]) != '?',]; set(df, NULL, as.integer(1), as.numeric(df[[1]])) # rimuovo righe con la chiave '?'
   df$short <- tolower(gsub(" ", "", str_replace_all(df[,get(colnamein)], "[^[:alnum:]]", " "), fixed = TRUE))
   if (substr(nomedf,1,12) != "GEM_Comuni") df$short <- paste0(tolower(substr(strsplit(nomedf,"_")[[1]][NROW(strsplit(nomedf,"_")[[1]])],5,nchar(strsplit(nomedf,"_")[[1]][NROW(strsplit(nomedf,"_")[[1]])]))),"_",df$short)
-  df$short <- str_replace_all(df$short,c("ü" = "ue", "ä" = "ae", "ö" = "oe", "ë" = "e"))
+  df$short <- str_replace_all(df$short,c("ü" = "ue", "ä" = "ae", "ö" = "oe", "ë" = "e", "à" = "a"))
 #  if (substr(nomedf,1,10) != "GEM_Comuni") {
 #    df[ , eval(colnameout) := NULL] # rimuovo la colonna
 #    setnames(df, "short", colnameout) # rinomiono la colonna
