@@ -9,7 +9,7 @@ substrRight <- function(x, n){
 
 #-- selezionare la Lingua di esecuzione dello script
 
-Lingua <- "Italiano" # Italiano
+Lingua <- "Deutsch" # Italiano
 
 fullyear <- 2020
 
@@ -77,22 +77,21 @@ GEM$gem <- as.integer(substrRight(GEM$Chiave, 3))
 #GEM$gem <- GEM$Chiave-21000
 GEM     <- GEM[order(GEM$short),]
 
-##--- neu Com_AggrPAF
+##--- Com_AggrPAF
 GEM <- merge(GEM,GEM_Com_AggrPAFDimora[,c("Com_AggrPAF","Descrizione","short")],by="Com_AggrPAF")
 GEM$Com_AggrPAF <- NULL
 setnames(GEM,"short.x","short")
 setnames(GEM,"short.y","com_aggr_paf")
 setnames(GEM,"Descrizione","com_aggr_paf_descrizione")
-##--- neu Com_AggrPAF
+##--- Com_AggrPAF
 
-##--- neu Com_AggrDimora
+##--- Com_AggrDimora
 GEM <- merge(GEM,GEM_Com_AggrDimora[,c("Com_AggrDimora","Descrizione","short")],by="Com_AggrDimora")
 GEM$Com_AggrDimora <- NULL
 setnames(GEM,"short.x","short")
 setnames(GEM,"short.y","com_aggr_dimora")
 setnames(GEM,"Descrizione","com_aggrdimora_descrizione")
-##--- neu Com_AggrDimora
-
+##--- Com_AggrDimora
 
 #-- preparo per l'export del dominio geo (gemeinde)
 
@@ -146,6 +145,51 @@ setDT(GEM_Com_AggrDimora)
 setcolorder(GEM_Com_AggrDimora,"geo")
 write.csv(GEM_Com_AggrDimora,file = paste(directoryddf,"ddf--entities--geo--dimora.csv",sep = "/"),
           row.names = FALSE,fileEncoding = "UTF-8",quote=FALSE)
+
+#-----------------------------------------------
+
+# leggo il file csv contenente i dati sui dipendenti con residenza in un comune e sede lavoro in un altro
+GEM_DimNoLav <- read.csv(paste(directorydati,'MCharts_dimoraNE_lavoro.csv',sep="/"), sep=",", header=TRUE, skip = 2) 
+GEM_DimNoLav$Istat <- as.numeric(substr(GEM_DimNoLav$X, 1, 3))
+
+# leggo il file csv contenente i dati sui dipendenti con sede lavoro in un comune e residenza in un altro
+GEM_LavNoDim <- read.csv(paste(directorydati,'MCharts_lavoroNE_dimora.csv',sep="/"), sep=",", header=TRUE, skip = 2) 
+GEM_LavNoDim$Istat <- as.numeric(substr(GEM_LavNoDim$X, 1, 3))
+
+# leggo il file csv contenente i dati sui dipendenti con residenza per comune
+GEM_Dim <- read.csv(paste(directorydati,'MCharts_dimora.csv',sep="/"), sep=",", header=TRUE, skip = 2) 
+GEM_Dim$Istat <- as.numeric(substr(GEM_Dim$X, 1, 3))
+
+# leggo il file csv contenente i dati sui dipendenti con sede lavoro per comune
+GEM_Lav <- read.csv(paste(directorydati,'MCharts_lavoro.csv',sep="/"), sep=",", header=TRUE, skip = 2) 
+GEM_Lav$Istat <- as.numeric(substr(GEM_Lav$X, 1, 3))
+
+# calcolo pendolarismo professionale in entrata e in uscita per comuni
+GEM_pend_OUT <- GEM_Dim
+GEM_pend_OUT[,2:ncol(GEM_pend_OUT)] <- (GEM_DimNoLav[,2:ncol(GEM_DimNoLav)]*100/GEM_Dim[,2:ncol(GEM_Dim)])
+GEM_pend_OUT <- GEM_pend_OUT[, colnames(GEM_pend_OUT) != "Istat"]
+GEM_pend_OUT$Istat <- substr(GEM_pend_OUT$X, 1, 3)
+GEM_pend_OUT <- GEM_pend_OUT[, colnames(GEM_pend_OUT) != "X"]
+names(GEM_pend_OUT)[which(substr(names(GEM_pend_OUT),1,1)=="X")] <- substr(names(GEM_pend_OUT)[which(substr(names(GEM_pend_OUT),1,1)=="X")],2,5)
+pendOUT <- melt(setDT(GEM_pend_OUT), id.vars = c("Istat"), variable.name = "time")
+colnames(pendOUT) <- c("gem","time","pend_out")
+pendOUT$gem <- as.integer(pendOUT$gem)
+pendOUT <- subset(pendOUT,gem <= 118)
+
+
+GEM_pend_IN <- GEM_Dim
+GEM_pend_IN[,2:ncol(GEM_pend_IN)]   <- (GEM_LavNoDim[,2:ncol(GEM_LavNoDim)]*100/GEM_Lav[,2:ncol(GEM_Lav)])
+GEM_pend_IN <- GEM_pend_IN[, colnames(GEM_pend_IN) != "Istat"]
+GEM_pend_IN$Istat <- substr(GEM_pend_IN$X, 1, 3)
+GEM_pend_IN <- GEM_pend_IN[, colnames(GEM_pend_IN) != "X"]
+names(GEM_pend_IN)[which(substr(names(GEM_pend_IN),1,1)=="X")] <- substr(names(GEM_pend_IN)[which(substr(names(GEM_pend_IN),1,1)=="X")],2,5)
+pendIN <- melt(setDT(GEM_pend_IN), id.vars = c("Istat"), variable.name = "time")
+colnames(pendIN) <- c("gem","time","pend_in")
+pendIN$gem <- as.integer(pendIN$gem)
+pendIN <- subset(pendIN,gem <= 118)
+
+pend <- merge(pendIN,pendOUT,by=c("gem","time"))
+pend$time <- as.numeric(as.character(pend$time))
 
 #-- leggo indicatori AMB (OML) - tod, tod_f, tod_m, alq, alq_f, alq_m, occ, dis
 occ <- fread(paste(directorydati,"MCharts_occupazione.tsv"   ,sep = "/"))
@@ -209,8 +253,12 @@ new <- astat[time==fullyear-1]
 new$time <- fullyear
 astat <- rbind(astat[time!=fullyear],new)
 
-ddf <- merge(astat,occdis,by=c("gem","time"),all.x = T)
+dat <- merge(pend,occdis,by=c("gem","time"),all.x = T)
+ddf <- merge(astat,dat,  by=c("gem","time"),all.x = T)
 ddf <- ddf[complete.cases(ddf), ]
+
+
+
 
 #-- dimoraDC - Bezirke
 ddf2 <- merge(ddf,subset(GEM,select = c("gem","Com_AggrCP")),by="gem")
