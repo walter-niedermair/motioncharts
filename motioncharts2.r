@@ -25,7 +25,14 @@ if (!dir.exists(directoryddf)) dir.create(sprintf('%s/ddf--%s-amb',directorymain
 
 #-- leggo i nomi dei comuni, circoscrizioni, piccole aree funzionali, etc
 
-sheetsXLS <- c('Comuni', 'Com_AggrDimora', 'Com_AggrDimora_DC', 'Com_AggrASDimora', 'Com_AggrPAFDimora', 'Com_AggrCPDimora')
+sheetsXLS <- c('Comuni', 
+               'Com_AggrDimora',
+               'Com_AggrDimoraDC',
+               'Com_AggrDimoraDCC',
+               'Com_AggrASDimora',
+               'Com_AggrPAFDimora',
+               'Com_AggrCPDimora'
+               )
 
 #-- funzione per leggere i diversi sheets del file excel, selezionando la lingua 
 
@@ -58,11 +65,12 @@ CreaShort <- function(nomedf = "df", colnamein  = "Descrizione", colnameout = "s
 }
 
 CreaShort(nomedf="GEM_Comuni"           , colnamein  ="DescrizioneDimora")
-CreaShort(nomedf="GEM_Com_AggrASDimora" )
-CreaShort(nomedf="GEM_Com_AggrPAFDimora")
-CreaShort(nomedf="GEM_Com_AggrDimora"   )
-CreaShort(nomedf="GEM_Com_AggrDimora_DC")
-CreaShort(nomedf="GEM_Com_AggrCPDimora", colnamein  ="Com_AggrCP")
+CreaShort(nomedf="GEM_Com_AggrASDimora"  )
+CreaShort(nomedf="GEM_Com_AggrPAFDimora" )
+CreaShort(nomedf="GEM_Com_AggrDimora"    )
+CreaShort(nomedf="GEM_Com_AggrDimoraDC" , colnamein  ="Descr_short")
+CreaShort(nomedf="GEM_Com_AggrDimoraDCC", colnamein  ="Descr_short")
+CreaShort(nomedf="GEM_Com_AggrCPDimora" , colnamein  ="Com_AggrCP")
 
 #-- merge per creare GEM
 
@@ -93,15 +101,36 @@ setnames(GEM,"short.y","com_aggr_dimora")
 setnames(GEM,"Descrizione","com_aggrdimora_descrizione")
 ##--- Com_AggrDimora
 
+##--- Com_AggrDimora_DC
+GEM <- merge(GEM,GEM_Com_AggrDimoraDC[,c("Com_AggrDimoraDC","Descrizione","short")],by="Com_AggrDimoraDC")
+GEM$Com_AggrDimoraDC <- NULL
+setnames(GEM,"short.x","short")
+setnames(GEM,"short.y","com_aggr_dimoradc")
+setnames(GEM,"Descrizione","com_aggrdimoradc_descrizione")
+##--- Com_AggrDimora_DC
+
+##--- Com_AggrDimora_DC2
+GEM <- merge(GEM,GEM_Com_AggrDimoraDCC[,c("Com_AggrDimoraDCC","Descrizione","short")],by="Com_AggrDimoraDCC")
+GEM$Com_AggrDimoraDCC <- NULL
+setnames(GEM,"short.x","short")
+setnames(GEM,"short.y","com_aggr_dimoradcc")
+setnames(GEM,"Descrizione","com_aggrdimoradcc_descrizione")
+##--- Com_AggrDimora_DC2
+
+
 #-- preparo per l'export del dominio geo (gemeinde)
 
-exp <- subset(GEM,select = c("short","color","DescrizioneDimora","com_aggr_as","com_aggr_paf","com_aggr_dimora","svg"))
+exp <- subset(GEM,select = c("short","color","DescrizioneDimora","com_aggr_as","com_aggr_paf","com_aggr_dimora","com_aggr_dimoradc","com_aggr_dimoradcc","svg"))
 setnames(exp,c("short","DescrizioneDimora"),c("gem","name"))
 setDT(exp)
 setcolorder(exp,"gem")
 exp$`is--gem` <- "true"
 
-setnames(exp,c("gem","com_aggr_as","com_aggr_paf","com_aggr_dimora","svg"),c("geo","asdimora","pafdimora","dimora","shape_lores_svg"))
+setnames(exp,c("gem","com_aggr_as","com_aggr_paf","com_aggr_dimora","com_aggr_dimoradc","com_aggr_dimoradcc","svg"),
+             c("geo","asdimora"   ,"pafdimora"   ,"dimora"         ,"dimoradc"         ,"dimoradcc"         ,"shape_lores_svg"))
+#exp$dimoradc <- NULL
+#exp$dimoradcc <- NULL
+
 write.csv(exp,file = paste(directoryddf,'ddf--entities--geo--gem.csv',sep = "/"),
           row.names = FALSE,fileEncoding = "UTF-8",quote=FALSE)
 
@@ -146,6 +175,37 @@ setcolorder(GEM_Com_AggrDimora,"geo")
 write.csv(GEM_Com_AggrDimora,file = paste(directoryddf,"ddf--entities--geo--dimora.csv",sep = "/"),
           row.names = FALSE,fileEncoding = "UTF-8",quote=FALSE)
 
+if (1) {
+#-- preparo per l'export del dominio geo (Com_AggrDimoraDC)
+GEM_Com_AggrDimoraDC$Com_AggrDimoraDC <- NULL
+GEM_Com_AggrDimoraDC$Descr_short <- NULL
+
+setnames(GEM_Com_AggrDimoraDC,"Descrizione","Com_AggrDimoraDC")
+setnames(GEM_Com_AggrDimoraDC,"short","com_aggr_dimora")
+setnames(GEM_Com_AggrDimoraDC,c("Com_AggrDimoraDC","com_aggr_dimora","svg"),c("name","dimoradc","shape_lores_svg"))
+GEM_Com_AggrDimoraDC$`is--dimoradc` <- "true"
+setnames(GEM_Com_AggrDimoraDC,"dimoradc","geo")
+setDT(GEM_Com_AggrDimoraDC)
+setcolorder(GEM_Com_AggrDimoraDC,"geo")
+write.csv(GEM_Com_AggrDimoraDC,file = paste(directoryddf,"ddf--entities--geo--dimoradc.csv",sep = "/"),
+          row.names = FALSE,fileEncoding = "UTF-8",quote=FALSE)
+}
+if (1) {
+#-- preparo per l'export del dominio geo (Com_AggrDimoraDC)
+GEM_Com_AggrDimoraDCC$Com_AggrDimoraDCC <- NULL
+GEM_Com_AggrDimoraDCC$Descr_short <- NULL
+GEM_Com_AggrDimoraDCC$color <- NULL
+
+setnames(GEM_Com_AggrDimoraDCC,"Descrizione","Com_AggrDimoraDCC")
+setnames(GEM_Com_AggrDimoraDCC,"short","com_aggr_dimora")
+setnames(GEM_Com_AggrDimoraDCC,c("Com_AggrDimoraDCC","com_aggr_dimora","svg"),c("name","dimoradcc","shape_lores_svg"))
+GEM_Com_AggrDimoraDCC$`is--dimoradcc` <- "true"
+setnames(GEM_Com_AggrDimoraDCC,"dimoradcc","geo")
+setDT(GEM_Com_AggrDimoraDCC)
+setcolorder(GEM_Com_AggrDimoraDCC,"geo")
+write.csv(GEM_Com_AggrDimoraDCC,file = paste(directoryddf,"ddf--entities--geo--dimoradcc.csv",sep = "/"),
+          row.names = FALSE,fileEncoding = "UTF-8",quote=FALSE)
+}
 #-----------------------------------------------
 
 # leggo il file csv contenente i dati sui dipendenti con residenza in un comune e sede lavoro in un altro
