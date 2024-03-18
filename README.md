@@ -1,6 +1,9 @@
 Hallo das ist unser Projekt
 
 ToDo:
+
+- cambiare l'anno a quello del 2022
+
 - lanciare lo script R una volta per la versione italiana con la opzione Lingua <- "Italiano" e una volta con la opzione Lingua <- "Deutsch" per la versione in tedesco.
 - Vedere se funziona tutto e il risultato si lascia importare in gampinder (www.gapminder.org)
 
