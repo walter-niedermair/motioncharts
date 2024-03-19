@@ -5,8 +5,8 @@ ToDo:
 - cambiare l'anno a quello del 2022
 
 - lanciare lo script R una volta per la versione italiana con la opzione Lingua <- "Italiano" e una volta con la opzione Lingua <- "Deutsch" per la versione in tedesco.
-- Vedere se funziona tutto e il risultato si lascia importare in gampinder (www.gapminder.org)
+- Vedere se c'è una possibiltà di utilizzare (https://vizabi.org/) per semplificare tutta la procedura
 
-- Volendo puoi usare il pacchetto r gapminder e vedere se si posso creare del output simile a quello di prima.
+- il pacchetto gapminder R contiene solo i dati, ma non c'è un methodo per l'export.
 
 - ci sentiamo
