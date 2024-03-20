@@ -1,0 +1,1422 @@
+{
+  "name": "ddf--it-amb",
+  "title": "ddf--it-amb",
+  "description": "",
+  "version": "0.0.1",
+  "language": {
+    "id": "en",
+    "name": "English"
+  },
+  "translations": [],
+  "license": "",
+  "author": "",
+  "resources": [
+    {
+      "path": "ddf--concepts.csv",
+      "name": "ddf--concepts",
+      "schema": {
+        "fields": [
+          {
+            "name": "concept"
+          },
+          {
+            "name": "color"
+          },
+          {
+            "name": "concept_type"
+          },
+          {
+            "name": "domain"
+          },
+          {
+            "name": "description"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "drill_up"
+          },
+          {
+            "name": "name_catalog"
+          },
+          {
+            "name": "name_short"
+          },
+          {
+            "name": "scales"
+          },
+          {
+            "name": "source"
+          },
+          {
+            "name": "source_long"
+          },
+          {
+            "name": "source_url"
+          },
+          {
+            "name": "tags"
+          }
+        ],
+        "primaryKey": "concept"
+      }
+    },
+    {
+      "path": "ddf--datapoints--indicators--by--geo--time.csv",
+      "name": "indicators--by--geo--time",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "time"
+          },
+          {
+            "name": "pop"
+          },
+          {
+            "name": "pcs"
+          },
+          {
+            "name": "ggperm"
+          },
+          {
+            "name": "en_pc"
+          },
+          {
+            "name": "sp_pc"
+          },
+          {
+            "name": "mig"
+          },
+          {
+            "name": "presenze"
+          },
+          {
+            "name": "popvar"
+          },
+          {
+            "name": "punti_vendita"
+          },
+          {
+            "name": "pend_in"
+          },
+          {
+            "name": "pend_out"
+          },
+          {
+            "name": "occ"
+          },
+          {
+            "name": "occ_f"
+          },
+          {
+            "name": "occ_m"
+          },
+          {
+            "name": "app"
+          },
+          {
+            "name": "app_f"
+          },
+          {
+            "name": "app_m"
+          },
+          {
+            "name": "ind"
+          },
+          {
+            "name": "ind_f"
+          },
+          {
+            "name": "ind_m"
+          },
+          {
+            "name": "tod"
+          },
+          {
+            "name": "tod_f"
+          },
+          {
+            "name": "tod_m"
+          },
+          {
+            "name": "dis"
+          },
+          {
+            "name": "dis_f"
+          },
+          {
+            "name": "dis_m"
+          },
+          {
+            "name": "alq"
+          },
+          {
+            "name": "alq_f"
+          },
+          {
+            "name": "alq_m"
+          }
+        ],
+        "primaryKey": [
+          "geo",
+          "time"
+        ]
+      }
+    },
+    {
+      "path": "ddf--entities--geo--asdimora.csv",
+      "name": "geo--asdimora",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "color"
+          },
+          {
+            "name": "shape_lores_svg"
+          },
+          {
+            "name": "is--asdimora"
+          }
+        ],
+        "primaryKey": "geo"
+      }
+    },
+    {
+      "path": "ddf--entities--geo--dimora.csv",
+      "name": "geo--dimora",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "shape_lores_svg"
+          },
+          {
+            "name": "is--dimora"
+          }
+        ],
+        "primaryKey": "geo"
+      }
+    },
+    {
+      "path": "ddf--entities--geo--dimoradc.csv",
+      "name": "geo--dimoradc",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "shape_lores_svg"
+          },
+          {
+            "name": "is--dimoradc"
+          }
+        ],
+        "primaryKey": "geo"
+      }
+    },
+    {
+      "path": "ddf--entities--geo--dimoradcc.csv",
+      "name": "geo--dimoradcc",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "shape_lores_svg"
+          },
+          {
+            "name": "is--dimoradcc"
+          }
+        ],
+        "primaryKey": "geo"
+      }
+    },
+    {
+      "path": "ddf--entities--geo--gem.csv",
+      "name": "geo--gem",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "color"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "asdimora"
+          },
+          {
+            "name": "pafdimora"
+          },
+          {
+            "name": "dimora"
+          },
+          {
+            "name": "dimoradc"
+          },
+          {
+            "name": "dimoradcc"
+          },
+          {
+            "name": "shape_lores_svg"
+          },
+          {
+            "name": "is--gem"
+          }
+        ],
+        "primaryKey": "geo"
+      }
+    },
+    {
+      "path": "ddf--entities--geo--pafdimora.csv",
+      "name": "geo--pafdimora",
+      "schema": {
+        "fields": [
+          {
+            "name": "geo"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "shape_lores_svg"
+          },
+          {
+            "name": "is--pafdimora"
+          }
+        ],
+        "primaryKey": "geo"
+      }
+    },
+    {
+      "path": "ddf--entities--tag.csv",
+      "name": "tag",
+      "schema": {
+        "fields": [
+          {
+            "name": "tag"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "parent"
+          }
+        ],
+        "primaryKey": "tag"
+      }
+    }
+  ],
+  "ddfSchema": {
+    "datapoints": [
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "alq",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "alq_f",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "alq_m",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "app",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "app_f",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "app_m",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "dis",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "dis_f",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "dis_m",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "en_pc",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "ggperm",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "ind",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "ind_f",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "ind_m",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "mig",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "occ",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "occ_f",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "occ_m",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "pcs",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "pend_in",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "pend_out",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "pop",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "popvar",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "presenze",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "punti_vendita",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "sp_pc",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "tod",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "tod_f",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem",
+          "time"
+        ],
+        "value": "tod_m",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "alq",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "alq_f",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "alq_m",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "app",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "app_f",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "app_m",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "dis",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "dis_f",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "dis_m",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "en_pc",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "ggperm",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "ind",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "ind_f",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "ind_m",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "mig",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "occ",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "occ_f",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "occ_m",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "pcs",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "pend_in",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "pend_out",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "pop",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "popvar",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "presenze",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "punti_vendita",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "sp_pc",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "tod",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "tod_f",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo",
+          "time"
+        ],
+        "value": "tod_m",
+        "resources": [
+          "indicators--by--geo--time"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "primaryKey": [
+          "asdimora"
+        ],
+        "value": "color",
+        "resources": [
+          "geo--asdimora"
+        ]
+      },
+      {
+        "primaryKey": [
+          "asdimora"
+        ],
+        "value": "is--asdimora",
+        "resources": [
+          "geo--asdimora"
+        ]
+      },
+      {
+        "primaryKey": [
+          "asdimora"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--asdimora"
+        ]
+      },
+      {
+        "primaryKey": [
+          "asdimora"
+        ],
+        "value": "shape_lores_svg",
+        "resources": [
+          "geo--asdimora"
+        ]
+      },
+      {
+        "primaryKey": [
+          "dimora"
+        ],
+        "value": "is--dimora",
+        "resources": [
+          "geo--dimora"
+        ]
+      },
+      {
+        "primaryKey": [
+          "dimora"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--dimora"
+        ]
+      },
+      {
+        "primaryKey": [
+          "dimora"
+        ],
+        "value": "shape_lores_svg",
+        "resources": [
+          "geo--dimora"
+        ]
+      },
+      {
+        "primaryKey": [
+          "dimoradc"
+        ],
+        "value": "is--dimoradc",
+        "resources": [
+          "geo--dimoradc"
+        ]
+      },
+      {
+        "primaryKey": [
+          "dimoradc"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--dimoradc"
+        ]
+      },
+      {
+        "primaryKey": [
+          "dimoradc"
+        ],
+        "value": "shape_lores_svg",
+        "resources": [
+          "geo--dimoradc"
+        ]
+      },
+      {
+        "primaryKey": [
+          "dimoradcc"
+        ],
+        "value": "is--dimoradcc",
+        "resources": [
+          "geo--dimoradcc"
+        ]
+      },
+      {
+        "primaryKey": [
+          "dimoradcc"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--dimoradcc"
+        ]
+      },
+      {
+        "primaryKey": [
+          "dimoradcc"
+        ],
+        "value": "shape_lores_svg",
+        "resources": [
+          "geo--dimoradcc"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem"
+        ],
+        "value": "asdimora",
+        "resources": [
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem"
+        ],
+        "value": "color",
+        "resources": [
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem"
+        ],
+        "value": "dimora",
+        "resources": [
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem"
+        ],
+        "value": "dimoradc",
+        "resources": [
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem"
+        ],
+        "value": "dimoradcc",
+        "resources": [
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem"
+        ],
+        "value": "is--gem",
+        "resources": [
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem"
+        ],
+        "value": "pafdimora",
+        "resources": [
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "gem"
+        ],
+        "value": "shape_lores_svg",
+        "resources": [
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "asdimora",
+        "resources": [
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "color",
+        "resources": [
+          "geo--asdimora",
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "dimora",
+        "resources": [
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "dimoradc",
+        "resources": [
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "dimoradcc",
+        "resources": [
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "is--asdimora",
+        "resources": [
+          "geo--asdimora"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "is--dimora",
+        "resources": [
+          "geo--dimora"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "is--dimoradc",
+        "resources": [
+          "geo--dimoradc"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "is--dimoradcc",
+        "resources": [
+          "geo--dimoradcc"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "is--gem",
+        "resources": [
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "is--pafdimora",
+        "resources": [
+          "geo--pafdimora"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--asdimora",
+          "geo--dimora",
+          "geo--dimoradc",
+          "geo--dimoradcc",
+          "geo--gem",
+          "geo--pafdimora"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "pafdimora",
+        "resources": [
+          "geo--gem"
+        ]
+      },
+      {
+        "primaryKey": [
+          "geo"
+        ],
+        "value": "shape_lores_svg",
+        "resources": [
+          "geo--asdimora",
+          "geo--dimora",
+          "geo--dimoradc",
+          "geo--dimoradcc",
+          "geo--gem",
+          "geo--pafdimora"
+        ]
+      },
+      {
+        "primaryKey": [
+          "pafdimora"
+        ],
+        "value": "is--pafdimora",
+        "resources": [
+          "geo--pafdimora"
+        ]
+      },
+      {
+        "primaryKey": [
+          "pafdimora"
+        ],
+        "value": "name",
+        "resources": [
+          "geo--pafdimora"
+        ]
+      },
+      {
+        "primaryKey": [
+          "pafdimora"
+        ],
+        "value": "shape_lores_svg",
+        "resources": [
+          "geo--pafdimora"
+        ]
+      },
+      {
+        "primaryKey": [
+          "tag"
+        ],
+        "value": "name",
+        "resources": [
+          "tag"
+        ]
+      },
+      {
+        "primaryKey": [
+          "tag"
+        ],
+        "value": "parent",
+        "resources": [
+          "tag"
+        ]
+      }
+    ],
+    "concepts": [
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "color",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "concept_type",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "description",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "domain",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "drill_up",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "name",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "name_catalog",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "name_short",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "scales",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "source",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "source_long",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "source_url",
+        "resources": [
+          "ddf--concepts"
+        ]
+      },
+      {
+        "primaryKey": [
+          "concept"
+        ],
+        "value": "tags",
+        "resources": [
+          "ddf--concepts"
+        ]
+      }
+    ],
+    "synonyms": []
+  }
+}
