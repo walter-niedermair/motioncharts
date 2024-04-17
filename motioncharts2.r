@@ -1,6 +1,7 @@
 if (!require("openxlsx"))   install.packages("openxlsx")   ; library (openxlsx)
 if (!require("data.table")) install.packages("data.table") ; library (data.table)
 if (!require("stringr"))    install.packages("stringr")    ; library (stringr)
+if (!require("jsonlite"))   install.packages("jasonlite")  ; library(jsonlite)
 
 #-- funzione da usare
 substrRight <- function(x, n){
@@ -9,9 +10,9 @@ substrRight <- function(x, n){
 
 #-- selezionare la Lingua di esecuzione dello script
 
-Lingua <- "Deutsch" # Italiano
+Lingua <- "Italiano" # Italiano
 
-fullyear <- 2020
+fullyear <- 2022
 
 #-- definisco le directory 
 
@@ -52,7 +53,7 @@ for(i in sheetsXLS){
 
 CreaShort <- function(nomedf = "df", colnamein  = "Descrizione", colnameout = "short") {
   #nomedf <- deparse(substitute(df))
-  df <-  eval(parse(text=nomedf))
+  df <-  eval(parse(text = nomedf))
   if (substr(nomedf,1,12) != "GEM_Comuni") df <- df[get(colnames(df)[1]) != '?',]; set(df, NULL, as.integer(1), as.numeric(df[[1]])) # rimuovo righe con la chiave '?'
   df$short <- tolower(gsub(" ", "", str_replace_all(df[,get(colnamein)], "[^[:alnum:]]", " "), fixed = TRUE))
   if (substr(nomedf,1,12) != "GEM_Comuni") df$short <- paste0(tolower(substr(strsplit(nomedf,"_")[[1]][NROW(strsplit(nomedf,"_")[[1]])],5,nchar(strsplit(nomedf,"_")[[1]][NROW(strsplit(nomedf,"_")[[1]])]))),"_",df$short)
@@ -373,6 +374,47 @@ write.csv(tags,
           quote=match(c("name"),colnames(tags)),
           na=""
 )
+
+#create the datapackage.json
+datapackage.json <- read_json(paste(directorydati,"datapackage.json",sep = "/"))
+
+datapackage.json[[1]] <- sprintf('ddf--%s-amb',tolower(substr(Lingua,1,2)))
+
+datapackage.json[[2]] <- sprintf('ddf--%s-amb',tolower(substr(Lingua,1,2)))
+
+json <- toJSON(datapackage.json, pretty=TRUE,auto_unbox=TRUE)
+
+write(json, file=paste(directoryddf,"datapackage.json",sep = "/"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
