@@ -1,7 +1,7 @@
 if (!require("openxlsx"))   install.packages("openxlsx")   ; library (openxlsx)
 if (!require("data.table")) install.packages("data.table") ; library (data.table)
 if (!require("stringr"))    install.packages("stringr")    ; library (stringr)
-if (!require("jsonlite"))   install.packages("jasonlite")  ; library(jsonlite)
+if (!require("jsonlite"))   install.packages("jsonlite")   ; library(jsonlite)
 
 #-- funzione da usare
 substrRight <- function(x, n){
